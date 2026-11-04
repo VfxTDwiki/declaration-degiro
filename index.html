@@ -2,11 +2,1454 @@
 <html lang="fr">
 <head>
 <meta charset="utf-8">
-<title>Déclaration Degiro : la page a déménagé</title>
-<meta http-equiv="refresh" content="0; url=https://vfxtdwiki.github.io/declaration-degiro/">
-<link rel="canonical" href="https://vfxtdwiki.github.io/declaration-degiro/">
+<!-- Dividendes Degiro · © 2026 Nicolas · Licence GNU AGPL-3.0-or-later (SPDX: AGPL-3.0-or-later) · https://ko-fi.com/vfxtdwiki -->
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<!-- Verrou de confidentialité : la page ne peut charger aucune ressource externe ni envoyer de données -->
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'unsafe-inline'; style-src 'unsafe-inline'; img-src data:; connect-src 'none'; form-action 'none'; base-uri 'none'">
+<title>Dividendes Degiro</title>
+<style>
+/* Registre fiscal : papier légèrement bleuté, encre bleu nuit, une seule couleur d'accent.
+   Mise en page : en-tête outil -> chiffres clés -> onglets de tableaux. */
+:root {
+  --bg: #f4f6f8;
+  --surface: #ffffff;
+  --ink: #17212b;
+  --muted: #5b6b79;
+  --line: #d9e0e6;
+  --accent: #1d5c8c;
+  --accent-soft: #e3eef7;
+  --warn: #9a5b00;
+  --warn-soft: #fff1d6;
+  --ok: #2e7d4f;
+  --font-body: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", sans-serif;
+  --font-num: ui-monospace, "SFMono-Regular", "Cascadia Mono", Consolas, "Liberation Mono", monospace;
+  color-scheme: light;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0f151b; --surface: #17202a; --ink: #e6edf3; --muted: #93a4b3; --line: #2a3744;
+    --accent: #6cb0e6; --accent-soft: #1b3348; --warn: #f0b85a; --warn-soft: #3a2b12; --ok: #6fcf97;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0f151b; --surface: #17202a; --ink: #e6edf3; --muted: #93a4b3; --line: #2a3744;
+  --accent: #6cb0e6; --accent-soft: #1b3348; --warn: #f0b85a; --warn-soft: #3a2b12; --ok: #6fcf97;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; background: var(--bg); color: var(--ink); font-family: var(--font-body); font-size: 15px; line-height: 1.45; }
+main { max-width: 1240px; margin: 0 auto; padding: 24px 20px 48px; display: grid; gap: 20px; }
+h1 { font-size: 1.6rem; font-weight: 600; margin: 0; text-wrap: balance; }
+h2 { font-size: 1.1rem; font-weight: 600; margin: 0; }
+p { margin: 0; }
+.muted { color: var(--muted); }
+header { display: grid; gap: 6px; }
+.prive { display: inline-flex; gap: 8px; align-items: center; font-size: .9rem; color: var(--muted); }
+.prive b { color: var(--ok); font-weight: 600; }
+
+/* Barre d'outils */
+.outils { display: flex; flex-wrap: wrap; gap: 12px; align-items: stretch; }
+.depot { flex: 1 1 360px; border: 1.5px dashed var(--line); border-radius: 10px; background: var(--surface);
+  padding: 14px 16px; display: flex; gap: 14px; align-items: center; cursor: pointer; }
+.depot.survol { border-color: var(--accent); background: var(--accent-soft); }
+.depot input { display: none; }
+.depot .bouton { white-space: nowrap; }
+.reglages { display: flex; gap: 12px; flex-wrap: wrap; align-items: center; background: var(--surface);
+  border: 1px solid var(--line); border-radius: 10px; padding: 10px 14px; }
+label { font-size: .85rem; color: var(--muted); display: grid; gap: 2px; }
+select { font: inherit; color: var(--ink); background: var(--bg); border: 1px solid var(--line); border-radius: 6px; padding: 4px 8px; }
+.bouton { font: inherit; font-size: .9rem; font-weight: 500; color: var(--accent); background: var(--accent-soft);
+  border: 1px solid transparent; border-radius: 6px; padding: 5px 12px; cursor: pointer; }
+.bouton:hover { border-color: var(--accent); }
+.bouton:focus-visible, select:focus-visible, .onglet:focus-visible, .depot:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.etat { font-size: .9rem; color: var(--muted); }
+.etat.erreur { color: var(--warn); }
+.exemple { font-size: .8rem; font-weight: 600; text-transform: uppercase; letter-spacing: .06em; color: var(--warn);
+  background: var(--warn-soft); border-radius: 4px; padding: 2px 8px; }
+
+/* Chiffres clés */
+.tuiles { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 10px; }
+.tuile { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 12px 14px; display: grid; gap: 2px; }
+.tuile .v { font-family: var(--font-num); font-size: 1.35rem; font-variant-numeric: tabular-nums; }
+.tuile .l { font-size: .82rem; color: var(--muted); }
+.tuile.alerte .v { color: var(--warn); }
+
+/* Onglets */
+.onglets { display: flex; gap: 4px; flex-wrap: wrap; border-bottom: 1px solid var(--line); }
+.onglet { font: inherit; font-size: .92rem; color: var(--muted); background: none; border: none; border-bottom: 2px solid transparent;
+  padding: 8px 12px; cursor: pointer; }
+.onglet[aria-selected="true"] { color: var(--ink); border-bottom-color: var(--accent); font-weight: 600; }
+.panneau { display: grid; gap: 12px; }
+.panneau[hidden] { display: none; }
+.entete-panneau { display: flex; gap: 12px; align-items: center; justify-content: space-between; flex-wrap: wrap; }
+
+/* Tableaux */
+.tableau { overflow-x: auto; background: var(--surface); border: 1px solid var(--line); border-radius: 10px; }
+table { border-collapse: collapse; width: 100%; font-size: .88rem; }
+th, td { padding: 7px 10px; border-bottom: 1px solid var(--line); text-align: left; vertical-align: top; }
+th { font-weight: 600; color: var(--muted); font-size: .8rem; background: var(--surface); position: sticky; top: 0; white-space: nowrap; }
+td.n, th.n { text-align: right; font-family: var(--font-num); font-variant-numeric: tabular-nums; white-space: nowrap; }
+tr.total td { font-weight: 600; border-top: 2px solid var(--line); }
+tbody tr:hover td { background: var(--accent-soft); }
+.chip { display: inline-block; font-size: .75rem; border-radius: 999px; padding: 1px 8px; background: var(--warn-soft); color: var(--warn); margin: 1px 2px 1px 0; }
+.code { font-family: var(--font-num); font-size: .8rem; color: var(--muted); }
+.formule { font-family: var(--font-num); font-size: .78rem; max-width: 420px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.bloc-formule { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 12px 14px; display: grid; gap: 8px; }
+.bloc-formule code { font-family: var(--font-num); font-size: .8rem; word-break: break-all; color: var(--ink); max-height: 6.5em; overflow: auto; }
+.note { font-size: .85rem; color: var(--muted); max-width: 75ch; }
+footer { border-top: 1px solid var(--line); padding-top: 16px; display: flex; flex-wrap: nowrap; gap: 12px 24px; align-items: center; justify-content: space-between; }
+footer .avert { font-size: 1rem; color: var(--muted); white-space: nowrap; }
+@media (max-width: 1100px) { footer { flex-wrap: wrap; } footer .avert { white-space: normal; } }
+.soutien { display: inline-flex; align-items: center; gap: 8px; font-weight: 600; font-size: 1rem; white-space: nowrap; text-decoration: none;
+  color: var(--surface); background: var(--accent); border-radius: 999px; padding: 7px 16px; }
+.soutien:hover { filter: brightness(1.1); }
+.soutien:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
+.soutien[hidden] { display: none; }
+.titre { display: flex; gap: 12px; align-items: center; justify-content: space-between; flex-wrap: wrap; }
+.langues { display: inline-flex; border: 1px solid var(--line); border-radius: 8px; overflow: hidden; }
+.langues[hidden] { display: none; }
+.langue { font: inherit; font-size: .85rem; font-weight: 600; color: var(--muted); background: var(--surface); border: none; padding: 5px 12px; cursor: pointer; }
+.langue[aria-pressed="true"] { color: var(--surface); background: var(--accent); }
+.langue:focus-visible { outline: 2px solid var(--accent); outline-offset: -2px; }
+.renvois { counter-reset: renvoi; list-style: none; margin: 0; padding: 0; display: grid; gap: 4px; font-size: .85rem; color: var(--muted); max-width: 90ch; }
+.renvois li { counter-increment: renvoi; padding-left: 2.2em; text-indent: -2.2em; }
+.renvois li::before { content: "(" counter(renvoi) ")"; display: inline-block; width: 2.2em; text-indent: 0; font-variant-numeric: tabular-nums; }
+.renvois b { color: var(--ink); font-weight: 600; }
+.toast { position: fixed; bottom: 18px; right: 18px; background: var(--ink); color: var(--bg); padding: 8px 14px; border-radius: 8px;
+  font-size: .9rem; opacity: 0; transition: opacity .2s; pointer-events: none; }
+.toast.vu { opacity: 1; }
+@media (prefers-reduced-motion: reduce) { .toast { transition: none; } }
+@media (max-width: 420px) { main { padding: 16px 16px 40px; } }
+.resume-pmv { display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 10px; margin-bottom: 18px; }
+#tab-2074 td:first-child { white-space: nowrap; }
+.resume-pmv .tuile .l + .l { color: var(--text, inherit); font-weight: 600; }
+#tab-2074 td { padding-top: 7px; padding-bottom: 7px; }
+#tab-2074 td + td, #tab-2074 th + th { border-left: 1px solid var(--line); }
+#tab-2074 tr.fort td { font-weight: 700; }
+#tab-2074 tr.ecart td { font-style: italic; color: var(--muted); font-size: .85rem; }
+#tab-2074 tr.discret td { color: var(--muted); font-size: .82rem; }
+#tab-2074 tr.section td { font-weight: 700; color: var(--accent); background: var(--accent-soft); padding-top: 10px; }
+#tab-2074 tr.resultat td { border-top: 2px solid var(--line); color: var(--accent); background: var(--accent-soft); }
+#tab-2074 tr.designation td + td { white-space: normal; min-width: 11ch; max-width: 16ch; overflow-wrap: anywhere; }
+#tab-2074 .total { font-weight: 600; border-right: 2px solid var(--line); }
+tr.total.haut td { border-top: none; border-bottom: 2px solid var(--line); }
+#tab-cessions tr.total.haut td { font-weight: 700; color: var(--accent); background: var(--accent-soft); }
+#tab-cessions td:nth-child(2), #tab-crypto td:nth-child(2) { min-width: 20ch; }
+.titre-synthese { font-size: 1rem; margin: 6px 0 -4px; }
+#resume-pmv .tuile .l + .l { color: var(--ink); font-weight: 600; }
+@media (min-width: 1000px) { #tuiles, #resume-pmv { grid-template-columns: repeat(6, 1fr); } }
+</style>
 </head>
 <body>
-<p>L'outil a déménagé : <a href="https://vfxtdwiki.github.io/declaration-degiro/">vfxtdwiki.github.io/declaration-degiro</a></p>
+<main>
+  <header>
+    <div class="titre">
+      <h1 data-t="titre">Dividendes Degiro</h1>
+      <div class="langues" role="group" aria-label="Langue / Language">
+        <button class="langue" data-lang="fr" lang="fr">FR</button>
+        <button class="langue" data-lang="en" lang="en">EN</button>
+      </div>
+    </div>
+    <p class="prive" data-th="prive"></p>
+  </header>
+
+  <section class="outils" aria-label="Fichier">
+    <label class="depot" id="depot" for="fichier" tabindex="0">
+      <input type="file" id="fichier" accept=".xlsx,.xlsm,.xls,.csv,.txt">
+      <span class="bouton" data-t="choisir"></span>
+      <span data-th="depot"></span>
+    </label>
+    <div class="reglages">
+      <label for="annee"><span data-t="annee"></span><select id="annee"></select></label>
+      <label for="regle"><span data-t="conversion"></span><select id="regle"><option value="macro" data-t="regleMacro"></option><option value="credit" data-t="regleCredit"></option></select></label>
+      <label for="sep"><span data-t="decimales"></span><select id="sep"><option value="," data-t="virgule"></option><option value="." data-t="point"></option></select></label>
+      <span id="badge" class="exemple" data-t="exemple"></span>
+    </div>
+  </section>
+  <p id="etat" class="etat" role="status"></p>
+
+  <h2 class="titre-synthese" data-t="synthDiv"></h2>
+  <section class="tuiles" id="tuiles"></section>
+  <h2 class="titre-synthese" data-t="synthPmv"></h2>
+  <section class="tuiles" id="resume-pmv"></section>
+
+  <nav class="onglets" role="tablist">
+    <button class="onglet" role="tab" id="t-pays" aria-controls="p-pays" aria-selected="true" data-t="ongletPays"></button>
+    <button class="onglet" role="tab" id="t-ste" aria-controls="p-ste" aria-selected="false" data-t="ongletSte"></button>
+    <button class="onglet" role="tab" id="t-pmv" aria-controls="p-pmv" aria-selected="false" data-t="ongletPmv"></button>
+    <button class="onglet" role="tab" id="t-suivi" aria-controls="p-suivi" aria-selected="false" data-t="ongletSuivi"></button>
+    <button class="onglet" role="tab" id="t-verif" aria-controls="p-verif" aria-selected="false" data-t="ongletVerif"></button>
+    <button class="onglet" role="tab" id="t-detail" aria-controls="p-detail" aria-selected="false" data-t="ongletDetail"></button>
+  </nav>
+
+  <section class="panneau" id="p-pays" role="tabpanel" aria-labelledby="t-pays">
+    <div class="entete-panneau"><h2 data-t="hPays"></h2><button class="bouton" data-copie="pays" data-t="copierTableau"></button></div>
+    <div class="tableau"><table id="tab-pays"></table></div>
+    <ol class="renvois" data-th="renvois"></ol>
+  </section>
+
+  <section class="panneau" id="p-ste" role="tabpanel" aria-labelledby="t-ste" hidden>
+    <div class="entete-panneau"><h2 data-t="hSte"></h2><button class="bouton" data-copie="ste" data-t="copierTableau"></button></div>
+    <div class="tableau"><table id="tab-ste"></table></div>
+    <ol class="renvois" data-th="renvois"></ol>
+  </section>
+
+  <section class="panneau" id="p-pmv" role="tabpanel" aria-labelledby="t-pmv" hidden>
+    <div class="entete-panneau"><h2 data-t="h2074"></h2><button class="bouton" data-copie="f2074" data-t="copierTableau"></button></div>
+    <div class="tableau"><table id="tab-2074"></table></div>
+    <p class="note" data-t="note2074"></p>
+    <div class="entete-panneau"><h2 data-t="hCessions"></h2><button class="bouton" data-copie="cessions" data-t="copierTableau"></button></div>
+    <div class="tableau"><table id="tab-cessions"></table></div>
+    <div id="bloc-crypto" hidden>
+      <div class="entete-panneau"><h2 data-t="hCrypto"></h2><button class="bouton" data-copie="crypto" data-t="copierTableau"></button></div>
+      <div class="tableau"><table id="tab-crypto"></table></div>
+      <p class="note" data-t="noteCrypto"></p>
+    </div>
+    <div class="entete-panneau"><h2 data-t="hPositions"></h2><button class="bouton" data-copie="positions" data-t="copierTableau"></button></div>
+    <div class="tableau"><table id="tab-positions"></table></div>
+    <p class="note" data-t="notePositions"></p>
+    <ol class="renvois" data-th="renvoisPmv"></ol>
+  </section>
+
+  <section class="panneau" id="p-suivi" role="tabpanel" aria-labelledby="t-suivi" hidden>
+    <div class="bloc-formule">
+      <div class="entete-panneau"><h2 data-t="hFormule"></h2><button class="bouton" id="copie-formule" data-t="copierFormule"></button></div>
+      <code id="formule"></code>
+      <p class="note" data-t="noteFormule"></p>
+    </div>
+    <div class="entete-panneau"><h2 data-t="hChrono"></h2><button class="bouton" data-copie="chrono" data-t="copierTableau"></button></div>
+    <div class="tableau"><table id="tab-chrono"></table></div>
+    <div class="entete-panneau"><h2 data-t="hMois"></h2><button class="bouton" data-copie="mois" data-t="copierTableau"></button></div>
+    <div class="tableau"><table id="tab-mois"></table></div>
+  </section>
+
+  <section class="panneau" id="p-verif" role="tabpanel" aria-labelledby="t-verif" hidden>
+    <div class="entete-panneau"><h2 data-t="hVerif"></h2><button class="bouton" data-copie="verif" data-t="copierTableau"></button></div>
+    <div class="tableau"><table id="tab-verif"></table></div>
+    <p class="note" data-t="noteVerif"></p>
+  </section>
+
+  <section class="panneau" id="p-detail" role="tabpanel" aria-labelledby="t-detail" hidden>
+    <div class="entete-panneau"><h2 data-t="hDetail"></h2><button class="bouton" data-copie="detail" data-t="copierTableau"></button></div>
+    <div class="tableau"><table id="tab-detail"></table></div>
+    <ol class="renvois" data-th="renvois"></ol>
+  </section>
+
+  <footer>
+    <p class="avert" data-t="avert"></p>
+    <a class="soutien" id="soutien" href="#" target="_blank" rel="noopener" hidden>
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M3 8h14v6a5 5 0 0 1-5 5H8a5 5 0 0 1-5-5V8z"/><path d="M17 10h1.5a2.5 2.5 0 0 1 0 5H17"/><path d="M7 3v2M11 3v2"/></svg>
+      <span data-t="soutien"></span>
+    </a>
+  </footer>
+</main>
+<div class="toast" id="toast" role="status"></div>
+
+<script>
+/* =====================================================================
+   Degiro -> dividendes : logique de calcul (portage de la macro VBA)
+   Fonctionne dans le navigateur (window.DegiroCore) et sous Node (module).
+   Aucune dépendance, aucun accès réseau.
+   ===================================================================== */
+(function (global) {
+  "use strict";
+
+  const BASE = "EUR";
+  const TOL_SOMME = 0.015;        // équilibre d'un lot de change
+  const TOL_FRAIS = 0.02;         // écart relatif toléré sur les frais Custody
+  const TOL_CENTIME = 0.011;      // écart absolu toléré
+  const FRAIS_FIXE_EUR = 1;       // part fixe des frais Custody
+  const MAX_JOURS_RATTRAPAGE = 120;
+  const TAUX_RETENUE = { JP: 0.15315, CA: 0.25, US: 0.15 };
+
+  const T_BRUT = "Dividende brut", T_IMPOT = "Retenue à la source", T_FRAIS = "Frais Custody";
+
+  /* ---------- utilitaires ---------- */
+  function num(v) {
+    if (v === null || v === undefined || v === "") return 0;
+    if (typeof v === "number") return v;
+    let s = String(v).trim().replace(/[\s  ]/g, "");
+    s = s.replace(/\u2212/g, "-");
+    if (s.indexOf(",") >= 0 && s.indexOf(".") >= 0) s = s.replace(/\./g, "");
+    s = s.replace(",", ".");
+    const n = parseFloat(s);
+    return isNaN(n) ? 0 : n;
+  }
+  // Jour (nombre de jours depuis 1970) à partir de "jj-mm-aaaa", "jj/mm/aaaa", Date ou série Excel
+  function jour(v) {
+    if (v === null || v === undefined || v === "") return NaN;
+    if (v instanceof Date) return Math.floor(Date.UTC(v.getFullYear(), v.getMonth(), v.getDate()) / 864e5);
+    if (typeof v === "number") return Math.floor(v) - 25569;            // série Excel
+    const m = String(v).trim().match(/^(\d{1,2})[-\/.](\d{1,2})[-\/.](\d{4})/);
+    if (m) return Math.floor(Date.UTC(+m[3], +m[2] - 1, +m[1]) / 864e5);
+    const m2 = String(v).trim().match(/^(\d{4})-(\d{2})-(\d{2})/);
+    if (m2) return Math.floor(Date.UTC(+m2[1], +m2[2] - 1, +m2[3]) / 864e5);
+    return NaN;
+  }
+  function jourVersDate(j) { return new Date(j * 864e5); }
+  function fmtDate(j) {
+    if (isNaN(j)) return "";
+    const d = jourVersDate(j);
+    return String(d.getUTCDate()).padStart(2, "0") + "/" + String(d.getUTCMonth() + 1).padStart(2, "0") + "/" + d.getUTCFullYear();
+  }
+  function annee(j) { return jourVersDate(j).getUTCFullYear(); }
+  function mois(j) { return jourVersDate(j).getUTCMonth() + 1; }
+  function heure(v) {
+    if (typeof v === "number") { const mn = Math.round(v * 1440); return String(Math.floor(mn / 60)).padStart(2, "0") + ":" + String(mn % 60).padStart(2, "0"); }
+    return v === null || v === undefined ? "" : String(v).trim();
+  }
+  // Arrondi commercial (0,225 -> 0,23), comme Excel ARRONDI
+  function arr2(x) { const s = x < 0 ? -1 : 1; return s * Math.floor(Math.abs(x) * 100 + 0.5 + 1e-9) / 100; }
+  // Arrondi "au pair" de VBA Round(x, 2) (pour retomber sur les mêmes centimes que la macro)
+  function vbaRound2(x) {
+    const v = x * 100, f = Math.floor(v), d = v - f;
+    if (Math.abs(d - 0.5) < 1e-9) return (f % 2 === 0 ? f : f + 1) / 100;
+    return Math.round(v) / 100;
+  }
+  function nettoyerLibelle(s) {
+    s = s === null || s === undefined ? "" : String(s);
+    return s.replace(/(\d)[   ](?=\d)/g, "$1").replace(/[   ]/g, " ");
+  }
+
+  /* ---------- 1. Lecture : tableau brut (1re ligne = en-têtes) -> lignes normalisées ---------- */
+  function normaliser(table) {
+    const h = table[0].map(x => (x === null || x === undefined ? "" : String(x)).trim().toLowerCase());
+    const col = (...noms) => { for (const n of noms) { const i = h.indexOf(n); if (i >= 0) return i; } return -1; };
+    const c = {
+      date: col("date"), heure: col("heure", "time"), dval: col("date de", "date de valeur", "value date"),
+      pdt: col("produit", "product"), isin: col("code isin", "isin"), desc: col("description"),
+      fx: col("fx"), mouv: col("mouvements", "change", "mouvement"), id: col("id ordre", "order id")
+    };
+    if (c.date < 0 || c.desc < 0 || c.mouv < 0) throw new Error("Colonnes Date / Description / Mouvements introuvables : est-ce bien un relevé de compte Degiro ?");
+    const lignes = [];
+    for (let r = 1; r < table.length; r++) {
+      const t = table[r];
+      if (!t || t.every(v => v === null || v === undefined || v === "")) continue;
+      const g = i => (i >= 0 && i < t.length ? t[i] : null);
+      // Libellé coupé sur 2 lignes (ancien format) : ligne sans date -> rattachée à la précédente
+      if ((g(c.date) === null || g(c.date) === "") && lignes.length) {
+        const p = lignes[lignes.length - 1];
+        if (g(c.id)) p.id += String(g(c.id)).trim(); else p.desc += nettoyerLibelle(g(c.desc));
+        continue;
+      }
+      lignes.push({
+        n: lignes.length, date: jour(g(c.date)), heure: heure(g(c.heure)), dval: jour(g(c.dval)),
+        pdt: String(g(c.pdt) || "").trim(), isin: String(g(c.isin) || "").trim(),
+        desc: nettoyerLibelle(g(c.desc)).trim(), fx: num(g(c.fx)),
+        dev: String(g(c.mouv) || "").trim().toUpperCase(), mnt: num(g(c.mouv + 1)),
+        id: String(g(c.id) || "").trim()
+      });
+    }
+    return lignes;   // ordre du fichier : la plus récente en premier
+  }
+
+  /* ---------- 2. Opérations sur titres : l'historique de l'ancien ISIN passe sous le nouveau ---------- */
+  const PREFIXES_OST = ["Changement ISIN", "Fractionnement", "Regroupement", "Modification instrument", "Ajustement fractionnement"];
+  function prefixeOST(d) { return PREFIXES_OST.find(p => d.startsWith(p)) || ""; }
+  function jambeOST(d, m) {
+    if (d.indexOf(": Vente ") >= 0) return "V";
+    if (d.indexOf(": Achat ") >= 0) return "A";
+    if (prefixeOST(d)) return m > 0 ? "V" : m < 0 ? "A" : "";
+    return "";
+  }
+  function appliquerOST(L) {
+    const journal = [];
+    for (let r = L.length - 1; r >= 0; r--) {                       // chronologique
+      const p = prefixeOST(L[r].desc);
+      if (!p || jambeOST(L[r].desc, L[r].mnt) !== "V") continue;
+      let a = -1;
+      for (let j = r - 3; j <= r + 3; j++) {
+        if (j < 0 || j >= L.length || j === r) continue;
+        if (prefixeOST(L[j].desc) === p && jambeOST(L[j].desc, L[j].mnt) === "A" &&
+            L[j].date === L[r].date && L[j].heure === L[r].heure) { a = j; break; }
+      }
+      if (a < 0) continue;
+      const ancien = L[r].isin, nouveau = L[a].isin, nom = L[a].pdt;
+      for (const x of L) if (x.isin === ancien || x.isin === nouveau) { x.isin = nouveau; x.pdt = nom; }
+      journal.push({ date: L[r].date, type: p, ancien, nouveau, nom });
+    }
+    return journal;
+  }
+
+  /* ---------- 3. Taux de change : rapprochement des conversions par montant (FIFO) ---------- */
+  const estChange = d => /ration de change/i.test(d);
+  function lotsDeChange(L) {
+    const n = L.length;
+    const taux = new Array(n).fill(0), lot = new Array(n).fill(""), ctrl = new Array(n).fill("");
+    const lots = [];
+    for (let i = 0; i < n; i++) if (L[i].dev === BASE) taux[i] = 1;
+    for (let i = n - 1; i >= 0; i--) {
+      const x = L[i];
+      if (!estChange(x.desc) || x.dev === BASE || !x.dev || !(x.fx > 0) || x.id) continue;
+      const idLot = "LOT_" + x.dev + "_" + fmtDate(x.date) + "_L" + (i + 2);
+      let somme = 0, fin = -1;
+      for (let j = n - 1; j > i; j--) {
+        const y = L[j];
+        if (estChange(y.desc) || y.dev !== x.dev || taux[j] !== 0 || y.id) continue;
+        somme += y.mnt;
+        if (Math.abs(arr2(somme + x.mnt)) <= TOL_SOMME) { fin = j; break; }
+      }
+      const ecart = fin >= 0 ? 0 : arr2(somme + x.mnt);
+      const borne = fin >= 0 ? fin : i + 1;
+      const membres = [];
+      for (let j = n - 1; j >= borne; j--) {
+        const y = L[j];
+        if (estChange(y.desc) || y.dev !== x.dev || taux[j] !== 0 || y.id) continue;
+        taux[j] = x.fx; lot[j] = idLot; membres.push(j);
+        if (ecart) ctrl[j] = "Écart lot de change " + ecart.toFixed(2).replace(".", ",") + " " + x.dev;
+      }
+      taux[i] = x.fx; lot[i] = idLot;
+      let eur = 0;
+      for (const k of [i - 1, i + 1]) {
+        if (k >= 0 && k < n && estChange(L[k].desc) && L[k].dev === BASE && L[k].date === x.date && L[k].heure === x.heure) {
+          lot[k] = idLot; eur = L[k].mnt; break;
+        }
+      }
+      lots.push({ id: idLot, dev: x.dev, date: x.date, montant: x.mnt, taux: x.fx, eur, membres, ecart });
+    }
+    for (let i = 0; i < n; i++) {
+      const x = L[i];
+      if (!taux[i] && x.dev && x.dev !== BASE && !estChange(x.desc) && !x.id && Math.abs(x.mnt) >= 0.005)
+        ctrl[i] = "Pas de conversion trouvée (exporter l'historique jusqu'à mi-janvier N+1 ?)";
+    }
+    return { taux, lot, ctrl, lots };
+  }
+
+  /* ---------- 4. Dividendes : rattachement des retenues et des frais ---------- */
+  function tauxRetenue(isin) { return TAUX_RETENUE[(isin || "").slice(0, 2).toUpperCase()] || 0; }
+  function fraisTheo(net, tauxDev) {
+    if (net <= 0) return 0;
+    const a = 0.1 * net, b = tauxDev > 0 ? 0.03 * net + FRAIS_FIXE_EUR * tauxDev : a;
+    return arr2(Math.min(a, b));
+  }
+  const estDividende = d => d === "Dividende" || d === "Remboursement de capital";
+  const estImpot = d => /^imp/i.test(d) && /dividende/i.test(d);
+  const estFrais = (d, isin) => /^frais d/i.test(d) && /titres/i.test(d) && !isin;
+
+  function dividendes(L, fx) {
+    const n = L.length, taux = fx.taux;
+    const F = [], ficheDe = new Array(n).fill(-1), tagDe = new Array(n).fill(""), tauxUtil = new Array(n).fill(0);
+    const ctrl = fx.ctrl.slice();
+    const cles = new Map();
+    const cle = x => x.isin + "|" + x.date + "|" + x.heure;
+
+    for (let i = n - 1; i >= 0; i--) {
+      const x = L[i];
+      if (!estDividende(x.desc)) continue;
+      const f = {
+        k: F.length, ligne: i, ligneMax: i, ste: x.pdt, isin: x.isin, dev: x.dev, dval: x.dval, date: x.date,
+        type: x.desc, brut: x.mnt, impot: 0, impotCorr: 0, impotCorrEur: 0, impotCorrEurM: 0, frais: 0, fraisRat: 0, fraisRatEur: 0, fraisEurM: 0,
+        taux: taux[i], aFrais: false, aImpot: false, ctrl: [], lignes: [i]
+      };
+      if (ctrl[i]) f.ctrl.push(ctrl[i]);
+      if (x.desc === "Remboursement de capital") f.ctrl.push("Remboursement de capital : traité comme dividende brut (à vérifier fiscalement)");
+      ficheDe[i] = f.k; tagDe[i] = T_BRUT; tauxUtil[i] = f.taux;
+      if (!cles.has(cle(x))) cles.set(cle(x), f.k);
+      F.push(f);
+    }
+    const dj = (a, b) => b - a;
+
+    // --- retenues : 4 passes ---
+    for (let passe = 1; passe <= 4; passe++) {
+      for (let i = n - 1; i >= 0; i--) {
+        const x = L[i];
+        if (!estImpot(x.desc) || ficheDe[i] >= 0) continue;
+        let r = -1;
+        if (passe === 1) {
+          let best = Infinity;
+          for (const f of F) {
+            if (f.aImpot || f.dev !== x.dev || f.brut <= 0 || Math.abs(dj(f.dval, x.dval)) > 3) continue;
+            const tr = tauxRetenue(f.isin);
+            if (!tr) continue;
+            if (Math.abs(arr2(f.brut * tr) + x.mnt) <= TOL_CENTIME) {
+              const sc = Math.abs(f.ligne - i) + (f.isin !== x.isin ? 1e6 : 0);
+              if (sc < best) { best = sc; r = f.k; }
+            }
+          }
+          if (r >= 0 && F[r].isin !== x.isin) ctrl[i] = "Retenue réattribuée par calcul (ISIN de la ligne : " + x.isin + ")";
+        } else if (passe === 2) {
+          if (cles.has(cle(x)) && !F[cles.get(cle(x))].aImpot) r = cles.get(cle(x));
+        } else if (passe === 3) {
+          const f = F.find(f => !f.aImpot && f.isin === x.isin && f.dev === x.dev && f.dval === x.dval);
+          if (f) r = f.k;
+        } else {
+          for (const f of F) {
+            if (f.isin !== x.isin || f.dev !== x.dev || f.dval > x.dval) continue;
+            if (r < 0 || f.dval > F[r].dval) r = f.k;
+            if (f.dval === x.dval) { r = f.k; break; }
+          }
+        }
+        if (r < 0) continue;
+        const f = F[r];
+        ficheDe[i] = r; tagDe[i] = T_IMPOT; f.lignes.push(i); f.impot += x.mnt;
+        if (passe === 4) {
+          f.impotCorr += x.mnt;
+          tauxUtil[i] = taux[i] || f.taux;
+          if (tauxUtil[i]) { f.impotCorrEur += arr2(x.mnt / tauxUtil[i]); f.impotCorrEurM += vbaRound2(x.mnt / tauxUtil[i]); }
+          ctrl[i] = "Correction d'impôt du dividende du " + fmtDate(f.dval);
+          f.ctrl.push("Correction d'impôt " + x.mnt.toFixed(2).replace(".", ",") + " le " + fmtDate(x.date));
+        } else {
+          f.aImpot = true; tauxUtil[i] = f.taux;
+          if (i > f.ligneMax) f.ligneMax = i;
+          if (taux[i] !== f.taux) f.ctrl.push("Taux de la retenue différent");
+          const tr = tauxRetenue(f.isin);
+          if (passe > 1 && tr && Math.abs(arr2(f.brut * tr) + x.mnt) > TOL_CENTIME)
+            f.ctrl.push("Retenue " + (-x.mnt / f.brut * 100).toFixed(3).replace(".", ",") + " % au lieu de " + (tr * 100).toFixed(3).replace(".", ",") + " %");
+        }
+      }
+    }
+
+    // taux approché par devise (pour les frais théoriques d'une ligne non convertie)
+    const fxApprox = {};
+    for (const x of L) if (estChange(x.desc) && x.dev !== BASE && x.fx > 0 && !(x.dev in fxApprox) && !x.id) fxApprox[x.dev] = x.fx;
+    fxApprox[BASE] = 1;
+
+    // --- frais Custody : 3 passes ---
+    for (let passe = 1; passe <= 3; passe++) {
+      for (let i = n - 1; i >= 0; i--) {
+        const x = L[i];
+        if (!estFrais(x.desc, x.isin) || ficheDe[i] >= 0) continue;
+        const mF = -x.mnt;
+        let r = -1, best = Infinity;
+        if (passe <= 2) {
+          for (const f of F) {
+            if (f.aFrais || f.dev !== x.dev) continue;
+            const e = dj(f.dval, x.dval);
+            if (!((passe === 1 && e === 0) || (passe === 2 && e > 0 && e <= MAX_JOURS_RATTRAPAGE))) continue;
+            const t = f.taux || fxApprox[f.dev] || 0;
+            // net de retenue hors corrections ultérieures ; dividende annulé (net < 0) : frais remboursés
+            const netF = f.brut + f.impot - f.impotCorr, sg = netF < 0 ? -1 : 1;
+            const th = fraisTheo(sg * netF, t);
+            if (th <= 0) continue;
+            const er = Math.abs(sg * mF - th) <= TOL_CENTIME ? 0 : Math.abs(sg * mF - th) / th;
+            if (er > TOL_FRAIS) continue;
+            const sc = Math.floor(er / 0.005) * 1e6 + (passe === 1 ? Math.abs(f.ligne - i) : e);
+            if (sc < best) { best = sc; r = f.k; }
+          }
+        } else {
+          for (let j = i + 1; j <= Math.min(i + 3, n - 1); j++) {
+            if (ficheDe[j] >= 0 && tagDe[j] !== T_FRAIS && !F[ficheDe[j]].aFrais && L[j].date === x.date) {
+              r = ficheDe[j]; F[r].ctrl.push("Frais rattachés par position (formule non vérifiée)"); break;
+            }
+          }
+        }
+        if (r < 0) continue;
+        const f = F[r];
+        ficheDe[i] = r; tagDe[i] = T_FRAIS; f.lignes.push(i); f.frais += x.mnt; f.aFrais = true;
+        if (passe === 2) {
+          // rattrapage : converti au taux de SA propre conversion
+          tauxUtil[i] = taux[i] || f.taux;
+          f.fraisRat += x.mnt;
+          if (tauxUtil[i]) f.fraisRatEur += arr2(x.mnt / tauxUtil[i]);
+          ctrl[i] = "Rattrapage de frais du dividende du " + fmtDate(f.dval);
+          f.ctrl.push("Frais rattrapés le " + fmtDate(x.date));
+        } else {
+          tauxUtil[i] = f.taux;
+          if (i > f.ligneMax) f.ligneMax = i;
+        }
+        if (tauxUtil[i]) f.fraisEurM += vbaRound2(x.mnt / tauxUtil[i]);   // règle macro : frais ligne à ligne
+      }
+    }
+
+    // --- montants nets : deux règles de conversion en euros ---
+    //  "macro"  : brut, retenue et frais convertis séparément puis additionnés (macro Excel)
+    //  "credit" : net du dividende converti en une fois au taux de son lot (= crédit EUR de
+    //             Degiro quand le lot ne contient qu'un dividende) ; brut EUR par différence
+    //  Dans les deux cas, corrections d'impôt et rattrapages de frais sont convertis à leur propre taux.
+    for (const f of F) {
+      f.net = arr2(f.brut + f.impot + f.frais);
+      if (f.taux > 0) {
+        const impotLot = f.impot - f.impotCorr, fraisLot = f.frais - f.fraisRat;
+        const bM = vbaRound2(f.brut / f.taux), iM = vbaRound2(impotLot / f.taux) + f.impotCorrEurM;
+        f.macro = { brutEur: bM, impotEur: arr2(iM), fraisEur: arr2(f.fraisEurM), netEur: arr2(bM + iM + f.fraisEurM) };
+        const netC = arr2(arr2((f.brut + impotLot + fraisLot) / f.taux) + f.impotCorrEur + f.fraisRatEur);
+        const iC = arr2(arr2(impotLot / f.taux) + f.impotCorrEur), frC = arr2(arr2(fraisLot / f.taux) + f.fraisRatEur);
+        f.credit = { brutEur: arr2(netC - iC - frC), impotEur: iC, fraisEur: frC, netEur: netC };
+      } else {
+        f.macro = f.credit = { brutEur: 0, impotEur: 0, fraisEur: 0, netEur: 0 };
+        f.ctrl.push("Taux de change inconnu");
+      }
+      Object.assign(f, { brutEur: f.macro.brutEur, impotEur: f.macro.impotEur, fraisEurAff: f.macro.fraisEur, netEur: f.macro.netEur });
+      { const nf = f.brut + f.impot - f.impotCorr, sg = nf < 0 ? -1 : 1;
+        f.theo = f.frais ? -sg * fraisTheo(sg * nf, f.taux || fxApprox[f.dev] || 0) : 0; }
+      f.pays = /^BMG/i.test(f.isin) ? "HK" : (f.isin || "").slice(0, 2).toUpperCase();   // BMG : Bermudes cotées à Hong Kong
+    }
+
+    // lignes orphelines
+    const orphelins = [];
+    for (let i = 0; i < n; i++) {
+      const x = L[i];
+      if (estImpot(x.desc) && ficheDe[i] < 0) orphelins.push({ i, motif: "Retenue sans dividende" });
+      else if (estFrais(x.desc, x.isin) && ficheDe[i] < 0) orphelins.push({ i, motif: "Frais sans dividende (dividende hors période exportée ?)" });
+    }
+    return { fiches: F, ficheDe, tagDe, tauxUtil, ctrl, orphelins };
+  }
+
+  /* ---------- 5. Synthèses ---------- */
+  function nomsCourts(stes, imposes) {
+    const premiers = {};
+    for (const s of stes) { const w = s.split(/\s+/)[0].toUpperCase(); premiers[w] = (premiers[w] || 0) + 1; }
+    const propre = s => s.toLowerCase().replace(/(^|[\s\-'&.(])([a-zà-ÿ])/g, (m, a, b) => a + b.toUpperCase());
+    const res = {};
+    for (const s of stes) {
+      if (imposes && imposes[s.toUpperCase()]) { res[s] = imposes[s.toUpperCase()]; continue; }
+      const mots = s.split(/\s+/);
+      res[s] = propre(premiers[mots[0].toUpperCase()] > 1 && mots.length > 1 ? mots[0] + " " + mots[1] : mots[0]);
+    }
+    return res;
+  }
+
+  function terme(x, libelle, premier, sepDec) {
+    let s = Math.abs(arr2(x)).toString().replace(".", sepDec);
+    s = x < 0 ? "-" + s : premier ? s : "+" + s;
+    return s + '+N("' + libelle + '")';
+  }
+
+  function synthese(L, res, an, options) {
+    options = options || {};
+    const sep = options.sepDec || ",";
+    const regle = options.regle === "credit" ? "credit" : "macro";
+    for (const f of res.fiches) {
+      const m = f[regle];
+      f.brutEur = m.brutEur; f.impotEur = m.impotEur; f.fraisEurAff = m.fraisEur; f.netEur = m.netEur;
+    }
+    const F = res.fiches.filter(f => annee(f.date) === an);
+    F.sort((a, b) => a.date - b.date || a.ste.localeCompare(b.ste));
+    const courts = nomsCourts([...new Set(F.map(f => f.ste))], options.nomsImposes);
+
+    // par société (même logique que DIVID_SYNTH : taux moyen = net devise / net EUR)
+    const parSte = new Map();
+    for (const f of F) {
+      if (!parSte.has(f.ste)) parSte.set(f.ste, { ste: f.ste, court: courts[f.ste], isin: f.isin, pays: f.pays, dev: f.dev, brut: 0, impot: 0, frais: 0, net: 0, netEur: 0, n: 0, ctrl: [] });
+      const s = parSte.get(f.ste);
+      s.brut += f.brut; s.impot += f.impot; s.frais += f.frais; s.net += f.net; s.netEur += f.netEur; s.n++;
+      if (f.ctrl.length) s.ctrl.push(...f.ctrl);
+    }
+    const societes = [...parSte.values()].sort((a, b) => a.ste.localeCompare(b.ste));
+    for (const s of societes) {
+      s.netEur = arr2(s.netEur);
+      if (s.dev === BASE) { s.L = 1; s.netEur = arr2(s.brut + s.impot + s.frais); }
+      else s.L = s.netEur ? s.net / s.netEur : 0;
+      s.impotEur = s.L ? arr2(s.impot / s.L) : 0;
+      s.fraisEur = s.L ? arr2(s.frais / s.L) : 0;
+      s.netEurR = s.L ? arr2(s.net / s.L) : 0;
+      s.brutEur = arr2(s.netEurR - s.fraisEur - s.impotEur);
+      s.pctRetenue = s.brut ? -s.impot / s.brut : 0;
+    }
+
+    // par pays
+    const parPays = new Map();
+    for (const s of societes) {
+      if (!parPays.has(s.pays)) parPays.set(s.pays, { pays: s.pays, brutEur: 0, impotEur: 0, fraisEur: 0, netAvantFrais: 0, netEur: 0, societes: 0 });
+      const p = parPays.get(s.pays);
+      p.brutEur += s.brutEur; p.impotEur += s.impotEur; p.fraisEur += s.fraisEur; p.netEur += s.netEurR; p.societes++;
+    }
+    const pays = [...parPays.values()].map(p => {
+      for (const k of ["brutEur", "impotEur", "fraisEur", "netEur"]) p[k] = arr2(p[k]);
+      p.netAvantFrais = arr2(p.brutEur + p.impotEur);
+      return p;
+    }).sort((a, b) => a.pays.localeCompare(b.pays));
+
+    // suivi chronologique + formules
+    const chrono = F.map(f => ({ date: f.date, mois: String(mois(f.date)).padStart(2, "0") + "/" + String(annee(f.date)).slice(2), ste: f.ste, court: courts[f.ste], netEur: f.netEur }));
+    let formule = "";
+    chrono.forEach((c, i) => { formule += terme(c.netEur, c.court + " " + c.mois, i === 0, sep); });
+    let suite = "";
+    for (let i = chrono.length - 1; i >= 0; i--) {
+      suite = terme(chrono[i].netEur, chrono[i].court + " " + chrono[i].mois, false, sep) + suite;
+      chrono[i].suite = suite;
+    }
+    for (const s of societes) {
+      let fs = "", premier = true;
+      s.mois = new Array(12).fill(0);
+      for (const c of chrono) if (c.ste === s.ste) {
+        s.mois[mois(c.date) - 1] += c.netEur;
+        fs += terme(c.netEur, c.court + " " + c.mois, premier, sep); premier = false;
+      }
+      s.mois = s.mois.map(arr2);
+      s.formule = "=" + fs;
+    }
+    return { an, fiches: F, societes, pays, chrono, formule: "=" + formule,
+             total: arr2(F.reduce((a, f) => a + f.netEur, 0)) };
+  }
+
+
+  /* =====================================================================
+     6. Cessions : registre au prix moyen pondéré (PMP)
+     ===================================================================== */
+  // "Achat 1 300 Nom@0,332 EUR (ISIN)" -> { sens, qte, prix, unite }
+  function lireExecution(d) {
+    const m = d.match(/(?:^|:\s)(Achat|Vente)\s+(.*?)@\s*([\d\s.,]+)\s*([A-Z]{3})?/);
+    if (!m) return null;
+    const t = m[2].trim().split(/\s+/);
+    let q = t[0], k = 1;
+    while (k < t.length && /^\d{3}$/.test(t[k])) q += t[k++];
+    return { sens: m[1], qte: num(q), prix: num(m[3]), unite: m[4] || "" };
+  }
+  const estFraisOrdre = d => /frais|stamp|taxe|ttf/i.test(d) && !estChange(d);
+
+  function cessions(L, fx) {
+    const n = L.length, ev = [], ctrlG = [];
+    const parId = new Map();
+    for (let i = 0; i < n; i++) if (L[i].id) { if (!parId.has(L[i].id)) parId.set(L[i].id, []); parId.get(L[i].id).push(i); }
+
+    // --- a. Ordres de bourse (ID Ordre) : une ligne par ordre, toutes exécutions confondues ---
+    for (const [id, idx] of parId) {
+      const execs = idx.filter(i => /^(Achat|Vente) /.test(L[i].desc));
+      if (!execs.length) continue;
+      const sens = L[execs[0]].desc.startsWith("Vente") ? "V" : "A";
+      let qte = 0, mntDev = 0, eurChange = 0, aChangeEur = false, frais = 0;
+      for (const i of execs) { const e = lireExecution(L[i].desc); qte += e ? e.qte : 0; mntDev += L[i].mnt; }
+      const dev = L[execs[0]].dev;
+      for (const i of idx) {
+        const x = L[i];
+        if (execs.includes(i)) continue;
+        if (estChange(x.desc) && x.dev === BASE) { eurChange += x.mnt; aChangeEur = true; }
+        else if (estFraisOrdre(x.desc)) frais += x.dev === BASE ? x.mnt : 0;
+      }
+      let eur, ctrl = [];
+      if (dev === BASE) eur = mntDev;
+      else if (aChangeEur) eur = eurChange;
+      else {
+        const t = fx.taux[execs[0]];
+        eur = t ? arr2(mntDev / t) : 0;
+        ctrl.push(t ? "Montant EUR estimé au taux du lot de change" : "Pas de conversion EUR trouvée pour l'ordre");
+      }
+      const i0 = Math.max(...execs);                       // première exécution (chronologique)
+      const x0 = L[i0];
+      ev.push({ pos: i0, date: x0.date, heure: x0.heure, isin: x0.isin, ste: x0.pdt, type: sens, qte,
+        eur: Math.abs(eur), frais: -frais, dev, mntDev: Math.abs(mntDev), execs: execs.length, ref: id, ctrl });
+    }
+
+    // --- b. Opérations sur titres sans ID Ordre ---
+    for (let i = n - 1; i >= 0; i--) {
+      const x = L[i], d = x.desc;
+      if (x.id) continue;
+      let m;
+      if ((m = d.match(/^Rachat: Vente /)) && Math.abs(x.mnt) >= 0.005) {
+        // offre de rachat / OPA payée en espèces
+        const e = lireExecution(d), t = x.dev === BASE ? 1 : fx.taux[i];
+        ev.push({ pos: i, date: x.date, heure: x.heure, isin: x.isin, ste: x.pdt, type: "V", qte: e ? e.qte : 0,
+          eur: t ? Math.abs(arr2(x.mnt / t)) : 0, frais: 0, dev: x.dev, mntDev: Math.abs(x.mnt), execs: 1, ref: "Rachat",
+          ctrl: t ? ["Rachat / OPA : converti au taux du lot de change (" + String(t).replace(".", ",") + ")"] : ["Rachat : taux de change introuvable"] });
+      } else if (/^Delisting: Vente /.test(d)) {
+        // retrait de cote : indemnisation éventuelle par "Règlement espèces" du même ISIN
+        const e = lireExecution(d);
+        let r = -1, best = 61;
+        for (let j = 0; j < n; j++) if (j !== i && L[j].isin && L[j].isin === x.isin && /^Règlement espèces/.test(L[j].desc)) {
+          const ec = Math.abs(L[j].date - x.date); if (ec < best) { best = ec; r = j; }
+        }
+        const mt = r >= 0 ? L[r].mnt : 0, t = x.dev === BASE ? 1 : (r >= 0 ? fx.taux[r] : 0);
+        ev.push({ pos: i, date: x.date, heure: x.heure, isin: x.isin, ste: x.pdt, type: "V", qte: e ? e.qte : 0,
+          eur: mt && t ? Math.abs(arr2(mt / t)) : 0, frais: 0, dev: x.dev, mntDev: Math.abs(mt), execs: 1, ref: "Delisting",
+          sansIndemnite: r < 0,
+          ctrl: [r >= 0 ? "Retrait de cote (OPA / OPR) : indemnisation " + String(mt).replace(".", ",") + " " + x.dev
+                         : "Titres annulés sans indemnisation"] });
+      } else if (/^(Spin-off|Droits de souscription): Achat /.test(d)) {
+        const e = lireExecution(d);
+        ev.push({ pos: i, date: x.date, heure: x.heure, isin: x.isin, ste: x.pdt, type: "A", qte: e ? e.qte : 0,
+          eur: 0, frais: 0, dev: x.dev, mntDev: 0, execs: 1, ref: d.split(":")[0], ctrl: [] });
+      }
+    }
+    // Fractionnements / regroupements : écart de quantité à coût constant, soulte éventuelle
+    for (let r = n - 1; r >= 0; r--) {
+      const p = prefixeOST(L[r].desc);
+      if (!p || L[r].id || jambeOST(L[r].desc, L[r].mnt) !== "V") continue;
+      for (let j = r - 3; j <= r + 3; j++) {
+        if (j < 0 || j >= n || j === r) continue;
+        if (prefixeOST(L[j].desc) === p && jambeOST(L[j].desc, L[j].mnt) === "A" && L[j].date === L[r].date && L[j].heure === L[r].heure) {
+          const qv = (lireExecution(L[r].desc) || {}).qte || num((L[r].desc.split(": ")[1] || "").split(" ")[0]);
+          const qa = (lireExecution(L[j].desc) || {}).qte || num((L[j].desc.split(": ")[1] || "").split(" ")[0]);
+          const soulte = arr2(L[r].mnt + L[j].mnt);
+          if (qa !== qv || Math.abs(soulte) >= 0.005) {
+            const t = L[r].dev === BASE ? 1 : fx.taux[r];
+            ev.push({ pos: Math.max(r, j), date: L[r].date, heure: L[r].heure, isin: L[j].isin, ste: L[j].pdt, type: "Q",
+              qte: qa - qv, eur: 0, frais: 0, dev: L[r].dev, mntDev: 0, execs: 1, ref: p,
+              ctrl: Math.abs(soulte) >= 0.005 ? ["Soulte / rompus " + String(soulte).replace(".", ",") + " " + L[r].dev +
+                (t ? " (≈ " + String(arr2(soulte / t)).replace(".", ",") + " €)" : "") + " : cession de rompus à déclarer à part"] : [] });
+            if (Math.abs(soulte) >= 0.005) ctrlG.push({ date: L[r].date, ste: L[j].pdt, motif: "Soulte / rompus " + String(soulte).replace(".", ",") + " " + L[r].dev + " lors du " + p.toLowerCase() });
+          }
+          break;
+        }
+      }
+    }
+
+    // --- c. Registre chronologique par ISIN ---
+    ev.sort((a, b) => b.pos - a.pos || (a.type === "V") - (b.type === "V"));
+    // clé du registre : l'ISIN, ou à défaut le nom du produit (cryptoactifs, sans ISIN chez Degiro)
+    const cleDe = e => e.isin || "~" + e.ste.toUpperCase();
+    const pos = new Map(), res = [];
+    for (const e of ev) {
+      const k = cleDe(e);
+      if (!pos.has(k)) pos.set(k, { q: 0, cout: 0, frais: 0, ste: e.ste, isin: e.isin });
+      const p = pos.get(k); p.ste = e.ste;
+      if (e.type === "A") { p.q += e.qte; p.cout += e.eur; p.frais += e.frais; }
+      else if (e.type === "Q") { p.q += e.qte; }
+      else {
+        const q0 = p.q, ratio = q0 > 1e-9 ? Math.min(1, e.qte / q0) : 0;
+        const cout = arr2(p.cout * ratio), fa = arr2(p.frais * ratio), qImp = q0 * ratio;
+        p.q = q0 - qImp; p.cout -= cout; p.frais -= fa;
+        if (p.q <= 1e-9) { p.q = 0; p.cout = 0; p.frais = 0; }
+        if (e.sansIndemnite && cout === 0 && fa === 0) continue;      // droits gratuits expirés : rien à déclarer
+        const c = { date: e.date, ste: e.ste, isin: e.isin, sansIsin: !e.isin, dev: e.dev, qte: e.qte, brut: arr2(e.eur), frais: arr2(e.frais),
+          qteAchat: qImp, cout, fraisAchat: fa, execs: e.execs, ref: e.ref, ctrl: e.ctrl.slice(), mntDev: e.mntDev };
+        if (Math.abs(qImp - e.qte) > 1e-6) c.ctrl.push("Vente de " + e.qte + " titres pour " + (Math.round(q0 * 1e6) / 1e6) + " détenus dans l'historique");
+        c.net = arr2(c.brut - c.frais);
+        c.revient = arr2(c.cout + c.fraisAchat);
+        c.resultat = arr2(c.net - c.revient);
+        // version formulaire en ligne : valeurs unitaires 514 (4 décimales) et 520 (2 décimales),
+        // montants à l'euro ; 516 = 514 × 515, 524 = résultat exact arrondi, 521 en solde
+        const e0 = x => Math.sign(x) * Math.floor(Math.abs(x) + 0.5 + 1e-9);
+        const u514 = e.qte ? Math.round(c.brut / e.qte * 1e4) / 1e4 : 0;
+        const u520 = e.qte ? arr2(c.cout / e.qte) : 0;
+        c.ligne = { l514: u514, l515: e.qte, l516: e0(u514 * e.qte), l517: e0(c.frais),
+          l520: u520, l522: e0(c.fraisAchat), l524: e0(c.resultat) };
+        c.ligne.l518 = c.ligne.l516 - c.ligne.l517;
+        // 524 = résultat exact arrondi ; 523 et 521 s'en déduisent pour que le formulaire boucle
+        c.ligne.l523 = c.ligne.l518 - c.ligne.l524;
+        c.ligne.l521 = c.ligne.l523 - c.ligne.l522;
+        res.push(c);
+      }
+    }
+    const positions = [...pos.entries()].filter(([, p]) => p.q > 1e-9).map(([, p]) => ({ isin: p.isin, ste: p.ste, q: p.q, cout: arr2(p.cout), frais: arr2(p.frais) }));
+    return { cessions: res, positions, ctrl: ctrlG };
+  }
+
+  function analyser(table) {
+    const L = normaliser(table);
+    const ost = appliquerOST(L);
+    const fx = lotsDeChange(L);
+    const res = dividendes(L, fx);
+    const ces = cessions(L, fx);
+    const annees = [...new Set([...res.fiches.map(f => annee(f.date)), ...ces.cessions.map(c => annee(c.date))])].sort();
+    return { lignes: L, ost, fx, res, ces, annees };
+  }
+
+  const api = { analyser, synthese, cessions, normaliser, appliquerOST, lotsDeChange, dividendes, fmtDate, annee, arr2, vbaRound2, TAUX_RETENUE };
+  if (typeof module !== "undefined" && module.exports) module.exports = api;
+  else global.DegiroCore = api;
+})(typeof window !== "undefined" ? window : globalThis);
+
+</script>
+<script>
+"use strict";
+/* ---------- Soutien : lien de la page Ko-fi ---------- */
+const LIEN_SOUTIEN = "https://ko-fi.com/vfxtdwiki";                       // ex. "https://ko-fi.com/votre-nom"
+/* Version anglaise : traductions prêtes, désactivée tant que les exports Degiro en anglais
+   ne sont pas reconnus par le calcul. Passer à true pour afficher le bouton FR / EN. */
+const ANGLAIS_ACTIF = false;
+
+const C = window.DegiroCore;
+
+/* ---------- Textes FR / EN ---------- */
+const TXT = {
+  fr: {
+    titre: "Dividendes et plus-values Degiro",
+    prive: "<b>Traitement local</b> Votre relevé est lu par votre navigateur. Il n'est envoyé nulle part : la page ne charge aucune ressource externe et ne peut joindre aucun serveur.",
+    choisir: "Choisir le relevé",
+    depot: "<strong>Relevé de compte Degiro</strong> (.xlsx ou .csv), historique complet depuis l'ouverture du compte.<br><span class=\"muted\">Ou glissez le fichier ici.</span>",
+    annee: "Année", conversion: "Conversion en euros (2)",
+    regleMacro: "brut, retenue, frais convertis séparément", regleCredit: "net converti en une fois (crédit Degiro)",
+    decimales: "Décimales des formules", virgule: "virgule (Sheets FR)", point: "point (Sheets EN)",
+    exemple: "Données d'exemple",
+    ongletPays: "Par pays (2047)", ongletSte: "Par société", ongletPmv: "Plus-values (2074)", synthDiv: "Dividendes", synthPmv: "Résultats de cessions", ongletSuivi: "Suivi et formules", ongletVerif: "À vérifier", ongletDetail: "Détail des dividendes",
+    hPays: "Dividendes par pays de source", hSte: "Dividendes par société", hFormule: "Formule de trésorerie de l'année",
+    hChrono: "Chronologique", hMois: "Par société et par mois", hVerif: "Points à vérifier", hDetail: "Détail par dividende",
+    h2074: "Lignes de la déclaration 2074 en ligne", hCessions: "Calcul au prix moyen pondéré", hPositions: "Titres encore détenus selon l'historique", hCrypto: "Cessions sans ISIN (cryptoactifs) : hors 2074",
+    noteCrypto: "Les cryptoactifs ne se déclarent pas sur la 2074 mais sur le formulaire 2086 (case 3AN ou 3BN de la 2042 C), avec une formule calculée sur l'ensemble du portefeuille d'actifs numériques à chaque cession, différente du prix moyen pondéré par ligne. Ces montants sont donnés à titre indicatif et exclus du résultat ci-dessus. Les cessions sont exonérées si leur total annuel ne dépasse pas 305 €.",
+    note2074: "Une colonne par cession, dans l'ordre du formulaire. Les montants suivent les arrondis du formulaire en ligne : valeurs unitaires 514 à 4 décimales et 520 à 2 décimales, montants à l'euro. La ligne 524 est le résultat exact arrondi à l'euro ; 523 et 521 s'en déduisent (523 = 518 − 524, 521 = 523 − 522) pour que le formulaire boucle. La dernière ligne donne l'écart avec le calcul exact.",
+    notePositions: "Comparez avec votre portefeuille Degiro : une quantité différente signale une opération manquante dans l'export (historique incomplet, opération sur titres non reconnue).",
+    renvoisPmv: "<li><b>Prix de cession</b> : montant en euros réellement crédité, c'est-à-dire l'opération de change rattachée à l'ordre (même ID Ordre). Les exécutions partielles d'un même ordre sont regroupées en une cession. Rachats et OPA sans ID Ordre : conversion au taux du lot de change.</li>" +
+      "<li><b>Frais</b> : courtage, frais de place, stamp duty et taxes de l'ordre, en euros.</li>" +
+      "<li><b>Prix d'acquisition</b> : prix moyen pondéré de tous les achats de la ligne depuis l'origine (art. 150-0 D du CGI), frais d'achat suivis à part pour la ligne 522. Le prix moyen repart de zéro quand la ligne est entièrement vendue. Fractionnements et regroupements changent la quantité sans changer le prix total ; changements d'ISIN conservés ; titres reçus gratuitement (spin-off, droits) à prix nul.</li>" +
+      "<li><b>Non traité</b> : moins-values des années antérieures à imputer, abattements pour durée de détention (titres acquis avant 2018 et option pour le barème), PEA, remboursements de capital venant réduire le prix de revient.</li>",
+    pmvRes: "Résultat net {a}", pmvPlus: "Plus-values", pmvMoins: "Moins-values", pmvNb: "Cessions",
+    pmvCase: "À reporter sur la 2042 : case {c}", pmvVide: "Aucune cession en {a}.",
+    c511: "511 Désignation des titres", c512: "512 Date de la cession", s513: "513 Détermination du prix de cession des titres", s519: "519 Détermination du prix de revient des titres",
+    c514: "514 Valeur unitaire de cession", c515: "515 Nombre de titres cédés", c516: "516 Montant global de la cession", c517: "517 Frais de cession", c518: "518 Prix de cession net",
+    c520: "520 Prix ou valeur d'acquisition unitaire", c521: "521 Prix ou valeur d'acquisition global", c522: "522 Frais d'acquisition", c523: "523 Prix de revient des titres cédés", c524: "524 Plus-value ou moins-value", cEcart: "Écart avec le calcul exact",
+    cQte: "Quantité", cPrixC: "Prix de cession €", cFraisC: "Frais de cession €", cNetC: "Cession nette €", cPrixA: "Prix d'acquisition €", cFraisA: "Frais d'achat €", cRevient: "Prix de revient €", cRes: "Plus ou moins-value €", cRef: "Origine", cCoutPmp: "Prix d'acquisition hors frais €", cRevientPos: "Prix de revient frais inclus €", cPmp: "Prix moyen hors frais €",
+    copierTableau: "Copier le tableau", copierFormule: "Copier la formule", copier: "Copier",
+    noteFormule: "À coller dans une cellule de Google Sheets. La colonne « À ajouter depuis cette date » sert aux mises à jour en cours d'année : copiez-la sur la première ligne pas encore reportée et collez-la à la fin de la formule existante.",
+    noteVerif: "Sur tout l'historique, au-delà de l'année choisie : opérations de change déséquilibrées, lignes sans conversion, retenues ou frais sans dividende, rattrapages et corrections, remboursements de capital.",
+    renvois: "<li><b>Pays</b> : celui de l'ISIN (2 premières lettres). Les ISIN « BMG », sociétés des Bermudes cotées à Hong Kong, sont rattachés à Hong Kong.</li>" +
+      "<li><b>Montants en euros</b> : chaque dividende est converti au taux de l'opération de change qui l'a réellement converti. Deux règles d'arrondi au choix (réglage « Conversion en euros ») : brut, retenue et frais convertis séparément, ou net converti en une fois comme le crédit Degiro, le brut étant alors déduit par différence. L'écart est de quelques centimes sur l'année.</li>" +
+      "<li><b>Frais</b> : frais Custody de Degiro, 1 € + 3 % du dividende net de retenue, plafonnés à 10 %.</li>",
+    avert: "Aide au calcul, pas un conseil fiscal : vérifiez les montants avant de les reporter sur votre déclaration.",
+    soutien: "Cet outil vous a fait gagner du temps ? Offrir un café",
+    copie: "copié", copieRefusee: "Copie refusée par le navigateur", formuleC: "Formule", tableauC: "Tableau",
+    etatExemple: "Exemple fictif affiché. Choisissez votre relevé pour voir vos chiffres.",
+    etatLecture: "Lecture de {f}…",
+    etatOk: "{f} : {l} lignes, {d} dividendes, {c} opérations de change rapprochées{k}, {o} opérations sur titres appliquées.",
+    etatKoNone: " sans écart", etatKo: ", dont {n} déséquilibrées",
+    erreur: "Lecture impossible : {m}. Utilisez l'export « Relevé de compte » de Degiro au format .xlsx ou .csv.",
+    tNet: "Net encaissé {a}", tBrut: "Brut", tRet: "Retenues à la source", tFrais: "Frais Custody", tDiv: "Dividendes, {n} sociétés", tVerif: "À vérifier (année / historique)",
+    cPays: "Pays", cSocietes: "Sociétés", cBrutE: "Brut €", cRetE: "Retenue €", cNetRetE: "Net de retenue €", cFraisE: "Frais €", cNetE: "Net encaissé €",
+    cSte: "Société", cDevise: "Devise", cBrutD: "Brut devise", cRetD: "Retenue devise", cPctRet: "% retenue", cFraisD: "Frais devise", cNetD: "Net devise", cNetE2: "Net €", cCtrl: "Contrôle",
+    cDate: "Date", cMois: "Mois", cCourt: "Nom court", cCumul: "Cumul €", cSuite: "À ajouter depuis cette date", cTotal: "Total €", cFormSte: "Formule ligne portefeuille",
+    cLigne: "Ligne", cMotif: "Motif", cIsin: "ISIN", cBrut: "Brut", cRet: "Retenue", cFrais: "Frais", cTheo: "Frais théoriques", cNet: "Net", cTaux: "Taux",
+    total: "Total", dividende: "Dividende", change: "Change",
+    mois: ["janv.", "févr.", "mars", "avr.", "mai", "juin", "juil.", "août", "sept.", "oct.", "nov.", "déc."],
+    pays: { AU:"Australie", AT:"Autriche", BE:"Belgique", BM:"Bermudes", CA:"Canada", CH:"Suisse", CN:"Chine", DE:"Allemagne", DK:"Danemark",
+      ES:"Espagne", FI:"Finlande", FR:"France", GB:"Royaume-Uni", GG:"Guernesey", HK:"Hong Kong", IE:"Irlande", IT:"Italie", JE:"Jersey",
+      JP:"Japon", KY:"Îles Caïmans", LU:"Luxembourg", NL:"Pays-Bas", NO:"Norvège", NZ:"Nouvelle-Zélande", PT:"Portugal", SE:"Suède",
+      SG:"Singapour", US:"États-Unis", ZA:"Afrique du Sud" },
+    locale: "fr-FR", decTsv: ","
+  },
+  en: {
+    titre: "Degiro Dividends and Capital Gains",
+    prive: "<b>Processed locally</b> Your statement is read by your browser. It is not sent anywhere: the page loads no external resources and cannot reach any server.",
+    choisir: "Choose statement",
+    depot: "<strong>Degiro account statement</strong> (.xlsx or .csv), full history since the account was opened.<br><span class=\"muted\">Or drop the file here.</span>",
+    annee: "Year", conversion: "Conversion to euros (2)",
+    regleMacro: "gross, tax and fees converted separately", regleCredit: "net converted once (Degiro credit)",
+    decimales: "Formula decimals", virgule: "comma (French Sheets)", point: "dot (English Sheets)",
+    exemple: "Sample data",
+    ongletPays: "By country (form 2047)", ongletSte: "By company", ongletPmv: "Capital gains (2074)", synthDiv: "Dividends", synthPmv: "Capital gains and losses", ongletSuivi: "Tracking and formulas", ongletVerif: "To check", ongletDetail: "Dividend detail",
+    hPays: "Dividends by source country", hSte: "Dividends by company", hFormule: "Cash formula for the year",
+    hChrono: "Chronological", hMois: "By company and month", hVerif: "Items to check", hDetail: "Detail by dividend",
+    h2074: "Online form 2074 lines", hCessions: "Weighted average cost calculation", hPositions: "Holdings remaining according to the history", hCrypto: "Sales without an ISIN (crypto-assets): not on form 2074",
+    noteCrypto: "Crypto-assets are not reported on form 2074 but on form 2086, with a formula based on the whole crypto portfolio at each sale, different from the per-holding weighted average cost. These amounts are indicative only and excluded from the result above. Sales are exempt if their yearly total does not exceed €305.",
+    note2074: "One column per sale, in the order of the form. Amounts follow the online form's rounding: unit values 514 to 4 decimals and 520 to 2 decimals, amounts to the euro. Line 524 is the exact result rounded to the euro; 523 and 521 are derived from it (523 = 518 − 524, 521 = 523 − 522) so the form balances. The last row shows the difference with the exact calculation.",
+    notePositions: "Compare with your Degiro portfolio: a different quantity means an operation is missing from the export (incomplete history, unrecognised corporate action).",
+    renvoisPmv: "<li><b>Sale price</b>: euro amount actually credited, i.e. the currency conversion attached to the order (same order ID). Partial executions of one order are grouped into one sale. Buy-backs and takeovers without an order ID: converted at the rate of the currency conversion batch.</li>" +
+      "<li><b>Fees</b>: brokerage, exchange fees, stamp duty and transaction taxes of the order, in euros.</li>" +
+      "<li><b>Acquisition price</b>: weighted average cost of all purchases of the holding since inception, purchase fees tracked separately for line 522. The average restarts from zero when the holding is fully sold. Splits and reverse splits change the quantity, not the total cost; ISIN changes are carried over; shares received for free (spin-offs, rights) at zero cost.</li>" +
+      "<li><b>Not handled</b>: losses carried forward from previous years, holding-period allowances, PEA accounts, returns of capital reducing the cost basis.</li>",
+    pmvRes: "Net result {a}", pmvPlus: "Gains", pmvMoins: "Losses", pmvNb: "Sales",
+    pmvCase: "Report on form 2042: box {c}", pmvVide: "No sales in {a}.",
+    c511: "511 Securities", c512: "512 Sale date", s513: "513 Sale price", s519: "519 Cost basis",
+    c514: "514 Unit sale value", c515: "515 Number of shares sold", c516: "516 Total sale amount", c517: "517 Sale fees", c518: "518 Net sale price",
+    c520: "520 Unit acquisition price", c521: "521 Total acquisition price", c522: "522 Acquisition fees", c523: "523 Cost basis of shares sold", c524: "524 Gain or loss", cEcart: "Difference with exact calculation",
+    cQte: "Quantity", cPrixC: "Sale price €", cFraisC: "Sale fees €", cNetC: "Net sale €", cPrixA: "Acquisition price €", cFraisA: "Purchase fees €", cRevient: "Cost basis €", cRes: "Gain or loss €", cRef: "Source", cCoutPmp: "Acquisition cost excl. fees €", cRevientPos: "Cost basis incl. fees €", cPmp: "Average price excl. fees €",
+    copierTableau: "Copy table", copierFormule: "Copy formula", copier: "Copy",
+    noteFormule: "Paste into a Google Sheets cell. The “To add from this date” column is for updates during the year: copy it from the first row not yet recorded and paste it at the end of the existing formula.",
+    noteVerif: "Across the whole history, not only the selected year: unbalanced currency conversions, lines without a conversion, withholding taxes or fees without a dividend, late fees and tax adjustments, returns of capital.",
+    renvois: "<li><b>Country</b>: taken from the ISIN (first 2 letters). “BMG” ISINs, Bermuda companies listed in Hong Kong, are assigned to Hong Kong.</li>" +
+      "<li><b>Euro amounts</b>: each dividend is converted at the rate of the currency conversion that actually converted it. Two rounding rules are available (“Conversion to euros” setting): gross, tax and fees converted separately, or the net converted once like the Degiro credit, with the gross then derived by difference. The difference is a few cents over the year.</li>" +
+      "<li><b>Fees</b>: Degiro Custody fees, €1 + 3% of the dividend net of withholding tax, capped at 10%.</li>",
+    avert: "A calculation aid, not tax advice: check the amounts before entering them in your tax return.",
+    soutien: "Did this tool save you time? Buy me a coffee",
+    copie: "copied", copieRefusee: "The browser refused to copy", formuleC: "Formula", tableauC: "Table",
+    etatExemple: "Fictitious example shown. Choose your statement to see your own figures.",
+    etatLecture: "Reading {f}…",
+    etatOk: "{f}: {l} lines, {d} dividends, {c} currency conversions matched{k}, {o} corporate actions applied.",
+    etatKoNone: " with no difference", etatKo: ", {n} of them unbalanced",
+    erreur: "Cannot read the file: {m}. Use Degiro's “Account statement” export in .xlsx or .csv format.",
+    tNet: "Net received {a}", tBrut: "Gross", tRet: "Withholding tax", tFrais: "Custody fees", tDiv: "Dividends, {n} companies", tVerif: "To check (year / history)",
+    cPays: "Country", cSocietes: "Companies", cBrutE: "Gross €", cRetE: "Tax €", cNetRetE: "Net of tax €", cFraisE: "Fees €", cNetE: "Net received €",
+    cSte: "Company", cDevise: "Currency", cBrutD: "Gross (ccy)", cRetD: "Tax (ccy)", cPctRet: "Tax rate", cFraisD: "Fees (ccy)", cNetD: "Net (ccy)", cNetE2: "Net €", cCtrl: "Check",
+    cDate: "Date", cMois: "Month", cCourt: "Short name", cCumul: "Running total €", cSuite: "To add from this date", cTotal: "Total €", cFormSte: "Portfolio row formula",
+    cLigne: "Line", cMotif: "Reason", cIsin: "ISIN", cBrut: "Gross", cRet: "Tax", cFrais: "Fees", cTheo: "Expected fees", cNet: "Net", cTaux: "Rate",
+    total: "Total", dividende: "Dividend", change: "Conversion",
+    mois: ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"],
+    pays: { AU:"Australia", AT:"Austria", BE:"Belgium", BM:"Bermuda", CA:"Canada", CH:"Switzerland", CN:"China", DE:"Germany", DK:"Denmark",
+      ES:"Spain", FI:"Finland", FR:"France", GB:"United Kingdom", GG:"Guernsey", HK:"Hong Kong", IE:"Ireland", IT:"Italy", JE:"Jersey",
+      JP:"Japan", KY:"Cayman Islands", LU:"Luxembourg", NL:"Netherlands", NO:"Norway", NZ:"New Zealand", PT:"Portugal", SE:"Sweden",
+      SG:"Singapore", US:"United States", ZA:"South Africa" },
+    locale: "en-GB", decTsv: "."
+  }
+};
+/* Messages de contrôle produits par le calcul (en français) -> anglais */
+const MOTIFS_EN = [
+  [/^Écart lot de change (.+)$/, "Currency conversion out of balance by $1"],
+  [/^Pas de conversion trouvée.*$/, "No currency conversion found (export the history up to mid-January of the following year?)"],
+  [/^Remboursement de capital.*$/, "Return of capital: treated as a gross dividend (check its tax treatment)"],
+  [/^Retenue réattribuée par calcul \(ISIN de la ligne : (.+)\)$/, "Withholding tax reassigned by calculation (ISIN on the line: $1)"],
+  [/^Correction d'impôt du dividende du (.+)$/, "Tax adjustment for the dividend of $1"],
+  [/^Correction d'impôt (.+) le (.+)$/, "Tax adjustment of $1 on $2"],
+  [/^Taux de la retenue différent$/, "Withholding tax converted at a different rate"],
+  [/^Retenue (.+) % au lieu de (.+) %$/, "Withholding tax $1% instead of $2%"],
+  [/^Frais rattachés par position.*$/, "Fee matched by position (formula not confirmed)"],
+  [/^Rattrapage de frais du dividende du (.+)$/, "Late fee for the dividend of $1"],
+  [/^Frais rattrapés le (.+)$/, "Late fee charged on $1"],
+  [/^Taux de change inconnu$/, "Unknown exchange rate"],
+  [/^Retenue sans dividende$/, "Withholding tax without a dividend"],
+  [/^Frais sans dividende.*$/, "Fee without a dividend (dividend outside the exported period?)"],
+  [/^Lot déséquilibré de (.+)$/, "Currency conversion out of balance by $1"],
+  [/^Rachat \/ OPA : converti au taux du lot de change \((.+)\)$/, "Buy-back / takeover: converted at the conversion batch rate ($1)"],
+  [/^Montant EUR estimé au taux du lot de change$/, "Euro amount estimated at the conversion batch rate"],
+  [/^Pas de conversion EUR trouvée pour l'ordre$/, "No euro conversion found for the order"],
+  [/^Retrait de cote \(OPA \/ OPR\) : indemnisation (.+)$/, "Delisting (takeover / squeeze-out): compensation $1"],
+  [/^Titres annulés sans indemnisation$/, "Shares cancelled without compensation"],
+  [/^Vente de (.+) titres pour (.+) détenus dans l'historique$/, "Sale of $1 shares, $2 held according to the history"],
+  [/^Soulte \/ rompus (.+) lors du (.+)$/, "Cash for fractional shares $1 on $2"],
+  [/^Colonnes Date \/ Description \/ Mouvements introuvables.*$/, "Date / Description / Change columns not found: is this a Degiro account statement?"]
+];
+
+let lang = "fr";
+try { lang = localStorage.getItem("dividendes-langue") || ""; } catch (e) { lang = ""; }
+if (!TXT[lang]) lang = /^fr/i.test(navigator.language || "") ? "fr" : "en";
+if (!ANGLAIS_ACTIF) lang = "fr";
+const t = (k, p) => { let s = TXT[lang][k]; if (p) for (const x in p) s = s.split("{" + x + "}").join(p[x]); return s; };
+const motif = m => {
+  if (lang === "fr") return m;
+  for (const [re, r] of MOTIFS_EN) if (re.test(m)) return m.replace(re, r).replace(/(\d),(\d)/g, "$1.$2");
+  return m;
+};
+
+const EXEMPLE = [
+  ["Date","Heure","Date de ","Produit","Code ISIN","Description","FX","Mouvements",null,"Solde",null,"ID Ordre"],
+  ["17-12-2025","07:03","16-12-2025",null,null,"Operation de change - Crédit",null,"EUR",21.07,null,null,null],
+  ["17-12-2025","07:03","16-12-2025",null,null,"Opération de change - Débit",183.4088,"JPY",-3864.99,null,null,null],
+  ["16-12-2025","06:26","16-12-2025",null,null,"Frais d’opération sur titres",null,"JPY",-284.57,null,null,null],
+  ["16-12-2025","06:24","16-12-2025",null,null,"Frais d’opération sur titres",null,"JPY",-84.69,null,null,null],
+  ["16-12-2025","06:20","16-12-2025","EXEMPLE PETROLE KK","JP0000000017","Dividende",null,"JPY",4000,null,null,null],
+  ["16-12-2025","06:20","16-12-2025","EXEMPLE PETROLE KK","JP0000000017","Impôts sur dividende",null,"JPY",-612.6,null,null,null],
+  ["16-12-2025","06:20","16-12-2025","EXEMPLE CHIMIE KK","JP0000000025","Impôts sur dividende",null,"JPY",-153.15,null,null,null],
+  ["16-12-2025","06:20","16-12-2025","EXEMPLE CHIMIE KK","JP0000000025","Dividende",null,"JPY",1000,null,null,null],
+  ["24-10-2025","02:15","24-10-2025","EXEMPLE CHIMIE KK","JP0000000025","Operation de change - Crédit",null,"EUR",956.52,null,null,"ex-0003"],
+  ["24-10-2025","02:15","24-10-2025","EXEMPLE CHIMIE KK","JP0000000025","Opération de change - Débit",172.5,"JPY",-165000,null,null,"ex-0003"],
+  ["24-10-2025","02:15","24-10-2025","EXEMPLE CHIMIE KK","JP0000000025","Frais DEGIRO de courtage et/ou de parties tierces",null,"EUR",-6,null,null,"ex-0003"],
+  ["24-10-2025","02:15","24-10-2025","EXEMPLE CHIMIE KK","JP0000000025","Vente 100 Exemple Chimie KK@1\u202f650 JPY (JP0000000025)",null,"JPY",165000,null,null,"ex-0003"],
+  ["15-09-2025","10:02","15-09-2025","EXEMPLE INDUSTRIA SPA","IT0000000013","Frais DEGIRO de courtage et/ou de parties tierces",null,"EUR",-3.92,null,null,"ex-0004"],
+  ["15-09-2025","10:02","15-09-2025","EXEMPLE INDUSTRIA SPA","IT0000000013","Vente 20 Exemple Industria SpA@14,1 EUR (IT0000000013)",null,"EUR",282,null,null,"ex-0004"],
+  ["02-07-2025","06:41","01-07-2025",null,null,"Operation de change - Crédit",null,"EUR",4.78,null,null,null],
+  ["02-07-2025","06:41","01-07-2025",null,null,"Opération de change - Débit",1.3449,"CAD",-6.43,null,null,null],
+  ["01-07-2025","06:54","30-06-2025",null,null,"Frais d’opération sur titres",null,"CAD",-0.71,null,null,null],
+  ["01-07-2025","06:54","30-06-2025","EXEMPLE IMMOBILIER LTD","CA0000000014","Dividende",null,"CAD",9.52,null,null,null],
+  ["01-07-2025","06:54","30-06-2025","EXEMPLE IMMOBILIER LTD","CA0000000014","Impôts sur dividende",null,"CAD",-2.38,null,null,null],
+  ["20-05-2025","07:10","20-05-2025",null,null,"Frais d’opération sur titres",null,"EUR",-1.11,null,null,null],
+  ["20-05-2025","07:10","20-05-2025","EXEMPLE INDUSTRIA SPA","IT0000000013","Dividende",null,"EUR",15,null,null,null],
+  ["20-05-2025","07:10","20-05-2025","EXEMPLE INDUSTRIA SPA","IT0000000013","Impôts sur dividende",null,"EUR",-3.9,null,null,null],
+  ["02-05-2024","09:31","02-05-2024","EXEMPLE INDUSTRIA SPA","IT0000000013","Frais DEGIRO de courtage et/ou de parties tierces",null,"EUR",-4.9,null,null,"ex-0002"],
+  ["02-05-2024","09:31","02-05-2024","EXEMPLE INDUSTRIA SPA","IT0000000013","Achat 50 Exemple Industria SpA@12,4 EUR (IT0000000013)",null,"EUR",-620,null,null,"ex-0002"],
+  ["12-03-2024","02:40","12-03-2024","EXEMPLE CHIMIE KK","JP0000000025","Operation de change - Crédit",162.3,"JPY",98000,null,null,"ex-0001"],
+  ["12-03-2024","02:40","12-03-2024","EXEMPLE CHIMIE KK","JP0000000025","Opération de change - Débit",null,"EUR",-603.82,null,null,"ex-0001"],
+  ["12-03-2024","02:40","12-03-2024","EXEMPLE CHIMIE KK","JP0000000025","Frais DEGIRO de courtage et/ou de parties tierces",null,"EUR",-6,null,null,"ex-0001"],
+  ["12-03-2024","02:40","12-03-2024","EXEMPLE CHIMIE KK","JP0000000025","Achat 100 Exemple Chimie KK@980 JPY (JP0000000025)",null,"JPY",-98000,null,null,"ex-0001"]
+];
+
+/* ---------- état ---------- */
+let analyse = null, synth = null, tables = {}, nomFichier = "", estExemple = true;
+const $ = id => document.getElementById(id);
+const num2 = x => x.toLocaleString(TXT[lang].locale, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+const eur = x => (x === null || x === undefined || x === "") ? "" : num2(x);
+const dev = x => num2(x);
+const pct = x => (x * 100).toLocaleString(TXT[lang].locale, { minimumFractionDigits: 2, maximumFractionDigits: 3 }) + " %";
+const esc = s => String(s).replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+const nomPays = c => TXT[lang].pays[c] ? TXT[lang].pays[c] + " (" + c + ")" : c || "?";
+const sup = n => " (" + n + ")";
+
+function toast(m) { const e = $("toast"); e.textContent = m; e.classList.add("vu"); clearTimeout(toast.t); toast.t = setTimeout(() => e.classList.remove("vu"), 1800); }
+async function copier(texte, quoi) {
+  try { await navigator.clipboard.writeText(texte); toast(quoi + " " + t("copie")); }
+  catch (e) { toast(t("copieRefusee")); }
+}
+
+/* Construit un tableau HTML + sa version TSV (pour copier vers Excel / Sheets) */
+function rendre(id, cols, lignes, total, totalEnHaut) {
+  const th = cols.map(c => `<th class="${c.n ? "n" : ""}">${esc(c.t)}</th>`).join("");
+  const td = (c, l) => {
+    const v = c.v(l);
+    const html = c.html ? c.html(l) : (c.n ? (typeof v === "number" ? (c.f || eur)(v, l) : "") : esc(v ?? ""));
+    return `<td class="${c.n ? "n" : ""}">${html}</td>`;
+  };
+  let corps = lignes.map(l => "<tr>" + cols.map(c => td(c, l)).join("") + "</tr>").join("");
+  if (total) corps = totalEnHaut ? `<tr class="total haut">` + cols.map(c => td(c, total)).join("") + "</tr>" + corps
+                                 : corps + `<tr class="total">` + cols.map(c => td(c, total)).join("") + "</tr>";
+  $(id).innerHTML = `<thead><tr>${th}</tr></thead><tbody>${corps}</tbody>`;
+  const val = (c, l) => { const v = c.v(l); return typeof v === "number" ? String(Math.round(v * 1e4) / 1e4).replace(".", TXT[lang].decTsv) : String(v ?? "").replace(/\s+/g, " "); };
+  const tot = total ? [cols.map(c => val(c, total)).join("\t")] : [];
+  return [cols.map(c => c.t).join("\t"), ...(totalEnHaut ? tot : []), ...lignes.map(l => cols.map(c => val(c, l)).join("\t")), ...(totalEnHaut ? [] : tot)].join("\n");
+}
+const somme = (arr, k) => C.arr2(arr.reduce((a, x) => a + (x[k] || 0), 0));
+const chips = arr => [...new Set(arr)].map(c => `<span class="chip">${esc(motif(c))}</span>`).join("");
+
+/* ---------- textes statiques ---------- */
+function traduire() {
+  document.documentElement.lang = lang;
+  document.title = t("titre");
+  document.querySelectorAll("[data-t]").forEach(e => { e.textContent = t(e.dataset.t); });
+  document.querySelectorAll("[data-th]").forEach(e => { e.innerHTML = t(e.dataset.th); });
+  document.querySelectorAll(".langue").forEach(b => b.setAttribute("aria-pressed", b.dataset.lang === lang));
+}
+
+function afficherEtat() {
+  if (estExemple) { $("etat").textContent = t("etatExemple"); return; }
+  if (!analyse) return;
+  const ko = analyse.fx.lots.filter(l => l.ecart).length;
+  $("etat").textContent = t("etatOk", { f: nomFichier, l: analyse.lignes.length, d: analyse.res.fiches.length, c: analyse.fx.lots.length,
+    k: ko ? t("etatKo", { n: ko }) : t("etatKoNone"), o: analyse.ost.length });
+}
+
+function afficher() {
+  if (!analyse) return;
+  afficherEtat();
+  const an = +$("annee").value;
+  synth = C.synthese(analyse.lignes, analyse.res, an, { sepDec: $("sep").value, regle: $("regle").value });
+  const S = synth;
+
+  // points à vérifier (tout l'historique)
+  const L = analyse.lignes, R = analyse.res, verif = [];
+  const ligne = x => x.desc + " " + dev(x.mnt) + " " + x.dev;
+  for (const f of R.fiches) for (const c of f.ctrl) verif.push({ date: f.date, ste: f.ste, quoi: t("dividende") + " " + dev(f.brut) + " " + f.dev, motif: c });
+  R.ctrl.forEach((c, i) => { if (c && R.ficheDe[i] >= 0 && R.tagDe[i] !== "Dividende brut") verif.push({ date: L[i].date, ste: R.fiches[R.ficheDe[i]].ste, quoi: ligne(L[i]), motif: c }); });
+  R.ctrl.forEach((c, i) => { if (c && R.ficheDe[i] < 0) verif.push({ date: L[i].date, ste: L[i].pdt, quoi: ligne(L[i]), motif: c }); });
+  for (const o of R.orphelins) { const x = L[o.i]; verif.push({ date: x.date, ste: x.pdt, quoi: ligne(x), motif: o.motif }); }
+  for (const l of analyse.fx.lots) if (l.ecart) verif.push({ date: l.date, ste: "", quoi: t("change") + " " + dev(l.montant) + " " + l.dev, motif: "Lot déséquilibré de " + l.ecart + " " + l.dev });
+  for (const c of analyse.ces.cessions) for (const m of c.ctrl) if (!/^Rachat \/ OPA/.test(m)) verif.push({ date: c.date, ste: c.ste, quoi: "Vente " + c.qte + " (" + eur(c.brut) + " €)", motif: m });
+  for (const g of analyse.ces.ctrl) verif.push({ date: g.date, ste: g.ste, quoi: "", motif: g.motif });
+  verif.sort((a, b) => b.date - a.date);
+  const verifAn = S.fiches.filter(f => f.ctrl.length).length;
+
+  // tuiles
+  const tot = { brut: somme(S.pays, "brutEur"), imp: somme(S.pays, "impotEur"), fr: somme(S.pays, "fraisEur"), net: somme(S.pays, "netEur") };
+  $("tuiles").innerHTML = [
+    [t("tNet", { a: an }), eur(tot.net) + " €"],
+    [t("tBrut"), eur(tot.brut) + " €"],
+    [t("tRet"), eur(tot.imp) + " €"],
+    [t("tFrais"), eur(tot.fr) + " €"],
+    [t("tDiv", { n: S.societes.length }), String(S.fiches.length)],
+    [t("tVerif"), verifAn + " / " + verif.length, verif.length ? "alerte" : ""]
+  ].map(([l, v, c]) => `<div class="tuile ${c || ""}"><span class="v">${v}</span><span class="l">${esc(l)}</span></div>`).join("");
+
+  // par pays
+  tables.pays = rendre("tab-pays", [
+    { t: t("cPays") + sup(1), v: p => p._total ? t("total") : nomPays(p.pays) },
+    { t: t("cSocietes"), n: 1, v: p => p.societes, f: x => String(x) },
+    { t: t("cBrutE") + sup(2), n: 1, v: p => p.brutEur },
+    { t: t("cRetE"), n: 1, v: p => p.impotEur },
+    { t: t("cNetRetE"), n: 1, v: p => p.netAvantFrais },
+    { t: t("cFraisE") + sup(3), n: 1, v: p => p.fraisEur },
+    { t: t("cNetE"), n: 1, v: p => p.netEur }
+  ], [...S.pays].sort((a, b) => nomPays(a.pays).localeCompare(nomPays(b.pays), TXT[lang].locale)), { _total: 1, societes: S.societes.length, brutEur: tot.brut, impotEur: tot.imp, netAvantFrais: C.arr2(tot.brut + tot.imp), fraisEur: tot.fr, netEur: tot.net });
+
+  // par société
+  tables.ste = rendre("tab-ste", [
+    { t: t("cSte"), v: s => s.ste }, { t: t("cPays") + sup(1), v: s => s.pays }, { t: t("cDevise"), v: s => s.dev },
+    { t: t("cBrutD"), n: 1, v: s => s.brut, f: dev }, { t: t("cRetD"), n: 1, v: s => s.impot, f: dev },
+    { t: t("cPctRet"), n: 1, v: s => s.pctRetenue, f: pct }, { t: t("cFraisD") + sup(3), n: 1, v: s => s.frais, f: dev },
+    { t: t("cNetD"), n: 1, v: s => s.net, f: dev },
+    { t: t("cBrutE") + sup(2), n: 1, v: s => s.brutEur }, { t: t("cRetE"), n: 1, v: s => s.impotEur },
+    { t: t("cFraisE"), n: 1, v: s => s.fraisEur }, { t: t("cNetE2"), n: 1, v: s => s.netEurR },
+    { t: t("cCtrl"), v: s => [...new Set(s.ctrl)].map(motif).join(" ; "), html: s => chips(s.ctrl) }
+  ], S.societes);
+
+  // plus-values
+  const CE = analyse.ces.cessions.filter(c => C.annee(c.date) === an && !c.sansIsin);
+  const CR = analyse.ces.cessions.filter(c => C.annee(c.date) === an && c.sansIsin);
+  const res = somme(CE, "resultat"), plus = C.arr2(CE.filter(c => c.ligne.l524 > 0).reduce((a, c) => a + c.ligne.l524, 0));
+  const res2074 = C.arr2(CE.reduce((a, c) => a + c.ligne.l524, 0));
+  const fmtE = x => Math.round(x).toLocaleString(TXT[lang].locale);
+  $("resume-pmv").innerHTML = CE.length ? [
+    [t("pmvRes", { a: an }), fmtE(res2074) + " €", t("pmvCase", { c: res2074 >= 0 ? "3VG" : "3VH" })],
+    [t("pmvPlus"), fmtE(plus) + " €"], [t("pmvMoins"), fmtE(res2074 - plus) + " €"], [t("pmvNb"), String(CE.length)]
+  ].map(([l, v, s]) => `<div class="tuile"><span class="v">${v}</span><span class="l">${esc(l)}</span>${s ? `<span class="l">${esc(s)}</span>` : ""}</div>`).join("")
+    : `<p class="note">${esc(t("pmvVide", { a: an }))}</p>`;
+  // formulaire 2074 : lignes du formulaire en lignes, cessions en colonnes
+  const qteF = x => x.toLocaleString(TXT[lang].locale, { maximumFractionDigits: 8 });
+  const fmtN = d => x => x.toLocaleString(TXT[lang].locale, { minimumFractionDigits: d, maximumFractionDigits: d });
+  const L2074 = [
+    { k: "c511", f: c => c.ste + " - Degiro", txt: 1, cls: "designation" },
+    { k: "cIsin", f: c => c.isin, txt: 1, cls: "discret" },
+    { k: "c512", f: c => C.fmtDate(c.date), txt: 1 },
+    { sec: "s513" },
+    { k: "c514", f: c => c.ligne.l514, d: 4 },
+    { k: "c515", f: c => c.ligne.l515, d: 0 },
+    { k: "c516", f: c => c.ligne.l516, d: 0 },
+    { k: "c517", f: c => c.ligne.l517, d: 0 },
+    { k: "c518", f: c => c.ligne.l518, d: 0, tot: 1, cls: "fort" },
+    { sec: "s519" },
+    { k: "c520", f: c => c.ligne.l520 },
+    { k: "c521", f: c => c.ligne.l521, d: 0 },
+    { k: "c522", f: c => c.ligne.l522, d: 0 },
+    { k: "c523", f: c => c.ligne.l523, d: 0, tot: 1, cls: "fort" },
+    { k: "c524", f: c => c.ligne.l524, d: 0, tot: 1, cls: "fort resultat" },
+    { k: "cEcart", f: c => C.arr2(c.ligne.l524 - c.resultat), tot: 1, cls: "ecart" }
+  ];
+  {
+    const avecTotal = CE.length > 1, nbCol = CE.length + 1 + (avecTotal ? 1 : 0);
+    const val = (r, c) => r.txt ? esc(r.f(c)) : fmtN(r.d ?? 2)(r.f(c));
+    const totalDe = r => C.arr2(CE.reduce((a, c) => a + r.f(c), 0));
+    const tsv = v => typeof v === "number" ? String(v).replace(".", TXT[lang].decTsv) : String(v);
+    let html = "";
+    const lignesTsv = [["", ...(avecTotal ? [t("total")] : []), ...CE.map((c, i) => String(i + 1))].join("\t")];
+    if (CE.length) for (const r of L2074) {
+      if (r.sec) { html += `<tr class="section"><td colspan="${nbCol}">${esc(t(r.sec))}</td></tr>`; lignesTsv.push(t(r.sec)); continue; }
+      html += `<tr class="${r.cls || ""}"><td>${esc(t(r.k))}</td>` +
+        (avecTotal ? `<td class="n total">${r.tot ? fmtN(r.d ?? 2)(totalDe(r)) : ""}</td>` : "") +
+        CE.map(c => `<td class="${r.txt ? "" : "n"}">${val(r, c)}</td>`).join("") + "</tr>";
+      lignesTsv.push([t(r.k), ...(avecTotal ? [r.tot ? tsv(totalDe(r)) : ""] : []), ...CE.map(c => tsv(r.f(c)))].join("\t"));
+    }
+    $("tab-2074").innerHTML = CE.length ? `<thead><tr><th></th>${avecTotal ? `<th class="n total">${esc(t("total"))}</th>` : ""}${CE.map((c, i) => `<th class="n">${i + 1}</th>`).join("")}</tr></thead><tbody>${html}</tbody>` : "";
+    tables.f2074 = lignesTsv.join("\n");
+  }
+  tables.cessions = rendre("tab-cessions", [
+    { t: t("cDate"), v: c => c.date === null ? "" : C.fmtDate(c.date) }, { t: t("cSte"), v: c => c.ste },
+    { t: t("cIsin"), v: c => c.isin, html: c => `<span class="code">${esc(c.isin)}</span>` },
+    { t: t("cQte"), n: 1, v: c => c.qte, f: qteF },
+    { t: t("cPrixC") + sup(1), n: 1, v: c => c.brut }, { t: t("cFraisC") + sup(2), n: 1, v: c => c.frais }, { t: t("cNetC"), n: 1, v: c => c.net },
+    { t: t("cPrixA") + sup(3), n: 1, v: c => c.cout }, { t: t("cFraisA") + sup(3), n: 1, v: c => c.fraisAchat }, { t: t("cRevient"), n: 1, v: c => c.revient },
+    { t: t("cRes"), n: 1, v: c => c.resultat },
+    { t: t("cCtrl"), v: c => c.ctrl.map(motif).join(" ; "), html: c => chips(c.ctrl) }
+  ], CE, CE.length > 1 ? { date: null, ste: t("total"), isin: "", qte: "", brut: somme(CE, "brut"), frais: somme(CE, "frais"), net: somme(CE, "net"), cout: somme(CE, "cout"), fraisAchat: somme(CE, "fraisAchat"), revient: somme(CE, "revient"), resultat: res, ctrl: [] } : null, true);
+  $("bloc-crypto").hidden = !CR.length;
+  tables.crypto = rendre("tab-crypto", [
+    { t: t("cDate"), v: c => C.fmtDate(c.date) }, { t: t("cSte"), v: c => c.ste },
+    { t: t("cQte"), n: 1, v: c => c.qte, f: qteF },
+    { t: t("cPrixC"), n: 1, v: c => c.brut }, { t: t("cFraisC"), n: 1, v: c => c.frais }, { t: t("cNetC"), n: 1, v: c => c.net },
+    { t: t("cPrixA"), n: 1, v: c => c.cout }, { t: t("cFraisA"), n: 1, v: c => c.fraisAchat }, { t: t("cRes"), n: 1, v: c => c.resultat }
+  ], CR);
+  tables.positions = rendre("tab-positions", [
+    { t: t("cSte"), v: p => p.ste }, { t: t("cIsin"), v: p => p.isin, html: p => `<span class="code">${esc(p.isin)}</span>` },
+    { t: t("cQte"), n: 1, v: p => p.q, f: qteF },
+    { t: t("cCoutPmp"), n: 1, v: p => p.cout }, { t: t("cFraisA"), n: 1, v: p => p.frais },
+    { t: t("cRevientPos"), n: 1, v: p => C.arr2(p.cout + p.frais) },
+    { t: t("cPmp"), n: 1, v: p => p.q ? Math.round(p.cout / p.q * 1e4) / 1e4 : 0, f: fmtN(4) }
+  ], [...analyse.ces.positions].sort((a, b) => a.ste.localeCompare(b.ste)));
+
+  // suivi
+  $("formule").textContent = S.formule;
+  let cumul = 0;
+  const chrono = S.chrono.map(c => (cumul = C.arr2(cumul + c.netEur), Object.assign({}, c, { cumul })));
+  tables.chrono = rendre("tab-chrono", [
+    { t: t("cDate"), v: c => C.fmtDate(c.date) }, { t: t("cMois"), v: c => c.mois }, { t: t("cSte"), v: c => c.ste },
+    { t: t("cCourt"), v: c => c.court }, { t: t("cNetE2"), n: 1, v: c => c.netEur }, { t: t("cCumul"), n: 1, v: c => c.cumul },
+    { t: t("cSuite"), v: c => c.suite, html: c => `<button class="bouton" data-suite="${chrono.indexOf(c)}">${esc(t("copier"))}</button> <span class="formule">${esc(c.suite)}</span>` }
+  ], chrono);
+  tables.mois = rendre("tab-mois", [
+    { t: t("cCourt"), v: s => s.court },
+    ...TXT[lang].mois.map((m, i) => ({ t: m, n: 1, v: s => s.mois[i] || "", f: x => x ? eur(x) : "" })),
+    { t: t("cTotal"), n: 1, v: s => C.arr2(s.mois.reduce((a, b) => a + b, 0)) },
+    { t: t("cFormSte"), v: s => s.formule, html: s => `<button class="bouton" data-ste="${esc(s.ste)}">${esc(t("copier"))}</button> <span class="formule">${esc(s.formule)}</span>` }
+  ], [...S.societes].sort((a, b) => a.court.localeCompare(b.court)));
+  $("tab-chrono").onclick = e => { const b = e.target.closest("[data-suite]"); if (b) copier(chrono[+b.dataset.suite].suite, t("formuleC")); };
+  $("tab-mois").onclick = e => { const b = e.target.closest("[data-ste]"); if (b) copier(S.societes.find(s => s.ste === b.dataset.ste).formule, t("formuleC")); };
+
+  // à vérifier
+  tables.verif = rendre("tab-verif", [
+    { t: t("cDate"), v: v => C.fmtDate(v.date) }, { t: t("cSte"), v: v => v.ste }, { t: t("cLigne"), v: v => v.quoi },
+    { t: t("cMotif"), v: v => motif(v.motif), html: v => `<span class="chip">${esc(motif(v.motif))}</span>` }
+  ], verif);
+
+  // détail
+  tables.detail = rendre("tab-detail", [
+    { t: t("cDate"), v: f => C.fmtDate(f.date) }, { t: t("cSte"), v: f => f.ste },
+    { t: t("cIsin"), v: f => f.isin, html: f => `<span class="code">${esc(f.isin)}</span>` }, { t: t("cDevise"), v: f => f.dev },
+    { t: t("cBrut"), n: 1, v: f => f.brut, f: dev }, { t: t("cRet"), n: 1, v: f => f.impot, f: dev },
+    { t: t("cFrais") + sup(3), n: 1, v: f => f.frais, f: dev }, { t: t("cTheo") + sup(3), n: 1, v: f => f.theo, f: dev },
+    { t: t("cNet"), n: 1, v: f => f.net, f: dev }, { t: t("cTaux"), n: 1, v: f => f.taux, f: x => x.toLocaleString(TXT[lang].locale, { maximumFractionDigits: 4 }) },
+    { t: t("cBrutE") + sup(2), n: 1, v: f => f.brutEur }, { t: t("cRetE"), n: 1, v: f => f.impotEur }, { t: t("cFraisE"), n: 1, v: f => f.fraisEurAff }, { t: t("cNetE2"), n: 1, v: f => f.netEur },
+    { t: t("cCtrl"), v: f => f.ctrl.map(motif).join(" ; "), html: f => chips(f.ctrl) }
+  ], S.fiches);
+}
+
+/* Année proposée : la dernière du relevé, sauf s'il s'arrête en janvier
+   (export prolongé pour les conversions de fin décembre) : on prend alors l'année précédente. */
+function anneeParDefaut(lignes, ans) {
+  const dates = lignes.map(l => l.date).filter(d => !isNaN(d));
+  if (!dates.length) return ans[0];
+  const fin = new Date(Math.max(...dates) * 864e5);
+  let an = fin.getUTCFullYear();
+  if (fin.getUTCMonth() === 0) an--;
+  return String(ans.find(a => a <= an) || ans[ans.length - 1]);
+}
+
+function charger(table, nom, exemple) {
+  try {
+    analyse = C.analyser(table);
+  } catch (e) {
+    $("etat").textContent = t("erreur", { m: motif(e.message) });
+    $("etat").classList.add("erreur");
+    return;
+  }
+  $("etat").classList.remove("erreur");
+  nomFichier = nom; estExemple = exemple;
+  const ans = analyse.annees.slice().reverse();
+  $("annee").innerHTML = ans.map(a => `<option>${a}</option>`).join("");
+  $("annee").value = anneeParDefaut(analyse.lignes, ans);
+  $("badge").hidden = !exemple;
+  afficher();
+}
+
+/* ---------- lecture .xlsx sans bibliothèque (zip + XML) ---------- */
+async function dezipper(buf) {
+  const v = new DataView(buf), u8 = new Uint8Array(buf), fichiers = {};
+  let e = buf.byteLength - 22;
+  while (e >= 0 && v.getUint32(e, true) !== 0x06054b50) e--;
+  if (e < 0) throw new Error("ce fichier n'est pas un classeur .xlsx");
+  const nb = v.getUint16(e + 10, true);
+  let p = v.getUint32(e + 16, true);
+  const dec = new TextDecoder();
+  for (let k = 0; k < nb; k++) {
+    if (v.getUint32(p, true) !== 0x02014b50) break;
+    const flags = v.getUint16(p + 8, true), meth = v.getUint16(p + 10, true), taille = v.getUint32(p + 20, true);
+    const ln = v.getUint16(p + 28, true), lx = v.getUint16(p + 30, true), lc = v.getUint16(p + 32, true);
+    const loc = v.getUint32(p + 42, true), nom = dec.decode(u8.subarray(p + 46, p + 46 + ln)).replace(/\\/g, "/");
+    if (flags & 1) throw new Error("le classeur est protégé par un mot de passe");
+    fichiers[nom.toLowerCase()] = { meth, taille, loc };
+    p += 46 + ln + lx + lc;
+  }
+  const lire = async nom => {
+    const f = fichiers[nom.replace(/^\//, "").toLowerCase()];
+    if (!f) return null;
+    const d = f.loc + 30 + v.getUint16(f.loc + 26, true) + v.getUint16(f.loc + 28, true);
+    const brut = u8.subarray(d, d + f.taille);
+    if (f.meth === 0) return dec.decode(brut);
+    if (f.meth !== 8) throw new Error("méthode de compression non gérée (" + f.meth + ")");
+    const flux = new Blob([brut]).stream().pipeThrough(new DecompressionStream("deflate-raw"));
+    return await new Response(flux).text();
+  };
+  lire.noms = Object.keys(fichiers);
+  return lire;
+}
+/* éléments XML par nom local, quel que soit le préfixe d'espace de noms (x:row, row…) */
+const enfants = (n, nom) => [...n.getElementsByTagNameNS("*", nom)];
+const xmlDoc = s => new DOMParser().parseFromString(s, "application/xml");
+const colIndex = ref => { let n = 0; for (const ch of ref.replace(/[^A-Z]/gi, "").toUpperCase()) n = n * 26 + ch.charCodeAt(0) - 64; return n - 1; };
+function lireFeuilleXml(texte, partages) {
+  const table = [];
+  for (const row of enfants(xmlDoc(texte), "row")) {
+    const ligne = []; let pos = 0;
+    for (const c of enfants(row, "c")) {
+      const r = c.getAttribute("r"), t = c.getAttribute("t"), vEl = enfants(c, "v")[0];
+      const i = r ? colIndex(r) : pos; pos = i + 1;
+      let val = null;
+      if (t === "s") val = vEl ? partages[+vEl.textContent] ?? null : null;
+      else if (t === "inlineStr") val = enfants(c, "t").map(x => x.textContent).join("");
+      else if (t === "str" || t === "e") val = vEl ? vEl.textContent : null;
+      else if (t === "b") val = vEl ? vEl.textContent === "1" : null;
+      else if (vEl && vEl.textContent !== "") { const n = Number(vEl.textContent); val = isNaN(n) ? vEl.textContent : n; }
+      ligne[i] = val;
+    }
+    for (let i = 0; i < ligne.length; i++) if (ligne[i] === undefined) ligne[i] = null;
+    const nr = +row.getAttribute("r");
+    if (nr > 0) table[nr - 1] = ligne; else table.push(ligne);
+  }
+  return table.filter(Boolean);
+}
+/* repère la ligne d'en-têtes du relevé (peut être précédée de lignes de titre) */
+function ligneEntete(table) {
+  for (let r = 0; r < Math.min(table.length, 40); r++) {
+    const h = (table[r] || []).map(x => String(x ?? "").trim().toLowerCase());
+    if (h.includes("description") && (h.includes("date") || h.includes("mouvements") || h.includes("change"))) return r;
+  }
+  return -1;
+}
+async function lireXlsx(buf) {
+  const lire = await dezipper(buf);
+  const partages = [];
+  const ss = await lire("xl/sharedStrings.xml");
+  if (ss) for (const si of enfants(xmlDoc(ss), "si"))
+    partages.push(enfants(si, "t").filter(t => !t.closest || !(t.parentNode && t.parentNode.localName === "rPh")).map(t => t.textContent).join(""));
+  // feuilles dans l'ordre du classeur, puis toutes les autres
+  const chemins = [];
+  const wb = await lire("xl/workbook.xml"), rels = await lire("xl/_rels/workbook.xml.rels");
+  if (wb && rels) {
+    const cibles = {};
+    for (const r of enfants(xmlDoc(rels), "Relationship")) cibles[r.getAttribute("Id")] = r.getAttribute("Target");
+    for (const s of enfants(xmlDoc(wb), "sheet")) {
+      const rid = [...s.attributes].find(a => a.localName === "id" && a.name !== "sheetId");
+      const t = rid && cibles[rid.value];
+      if (t) chemins.push(t.startsWith("/") ? t.slice(1) : "xl/" + t.replace(/^\.\//, ""));
+    }
+  }
+  for (const n of lire.noms) if (/^xl\/worksheets\/[^/]+\.xml$/.test(n) && !chemins.some(c => c.toLowerCase() === n)) chemins.push(n);
+  if (!chemins.length) throw new Error("aucune feuille trouvée dans le classeur");
+  let premiere = null;
+  for (const ch of chemins) {
+    const x = await lire(ch);
+    if (!x) continue;
+    const table = lireFeuilleXml(x, partages);
+    if (!premiere) premiere = table;
+    if (ligneEntete(table) >= 0) return table;
+  }
+  return premiere || [];
+}
+/* ancien format .xls : soit un vrai classeur Excel 97-2003, soit une page HTML renommée */
+function lireHtml(texte) {
+  const doc = new DOMParser().parseFromString(texte, "text/html");
+  const tables = [...doc.querySelectorAll("table")].map(t => [...t.rows].map(r => [...r.cells].map(c => { const s = c.textContent.trim(); return s === "" ? null : s; })));
+  return tables.find(t => ligneEntete(t) >= 0) || tables[0] || [];
+}
+function lireCsv(texte) {
+  texte = texte.replace(/^﻿/, "");
+  const premiere = texte.split(/\r?\n/).find(l => /description/i.test(l)) || texte.split(/\r?\n/)[0];
+  const compte = c => premiere.split(c).length - 1;
+  const sep = [",", ";", "\t"].sort((a, b) => compte(b) - compte(a))[0];
+  const lignes = []; let ligne = [], champ = "", guill = false;
+  for (let i = 0; i < texte.length; i++) {
+    const ch = texte[i];
+    if (guill) {
+      if (ch === '"' && texte[i + 1] === '"') { champ += '"'; i++; }
+      else if (ch === '"') guill = false;
+      else champ += ch;
+    } else if (ch === '"') guill = true;
+    else if (ch === sep) { ligne.push(champ); champ = ""; }
+    else if (ch === "\n" || ch === "\r") {
+      if (ch === "\r" && texte[i + 1] === "\n") i++;
+      ligne.push(champ); lignes.push(ligne); ligne = []; champ = "";
+    } else champ += ch;
+  }
+  if (champ || ligne.length) { ligne.push(champ); lignes.push(ligne); }
+  return lignes.map(l => l.map(v => v === "" ? null : v));
+}
+function decoderTexte(buf) {
+  const t = new TextDecoder("utf-8").decode(buf);
+  return t.includes("\uFFFD") ? new TextDecoder("windows-1252").decode(buf) : t;
+}
+/* lit n'importe quel export : détecte le format au contenu, pas à l'extension */
+async function lireTable(buf) {
+  const u8 = new Uint8Array(buf);
+  let table;
+  if (u8[0] === 0x50 && u8[1] === 0x4b) table = await lireXlsx(buf);
+  else if (u8[0] === 0xd0 && u8[1] === 0xcf && u8[2] === 0x11 && u8[3] === 0xe0)
+    throw new Error("fichier Excel 97-2003 (.xls) non lisible ici. Ouvrez-le dans Excel et enregistrez-le au format .xlsx, ou exportez le relevé Degiro en .csv");
+  else {
+    const texte = decoderTexte(buf);
+    table = /^\s*</.test(texte) ? lireHtml(texte) : lireCsv(texte);
+  }
+  const r = ligneEntete(table);
+  if (r < 0) {
+    const apercu = (table.find(l => l && l.some(v => v !== null)) || []).filter(v => v !== null).slice(0, 6).join(" | ");
+    throw new Error("en-têtes Date / Description / Mouvements introuvables" + (apercu ? " (première ligne lue : « " + String(apercu).slice(0, 120) + " »)" : " (fichier vide ?)"));
+  }
+  return table.slice(r);
+}
+async function lireFichier(f) {
+  $("etat").textContent = t("etatLecture", { f: f.name });
+  $("etat").classList.remove("erreur");
+  try {
+    const buf = await f.arrayBuffer();
+    const table = await lireTable(buf);
+    charger(table, f.name, false);
+  } catch (e) {
+    $("etat").textContent = t("erreur", { m: motif(e.message) });
+    $("etat").classList.add("erreur");
+  }
+}
+
+/* ---------- événements ---------- */
+$("fichier").addEventListener("change", e => { const f = e.target.files[0]; if (f) lireFichier(f); });
+const depot = $("depot");
+["dragenter", "dragover"].forEach(ev => depot.addEventListener(ev, e => { e.preventDefault(); depot.classList.add("survol"); }));
+["dragleave", "drop"].forEach(ev => depot.addEventListener(ev, e => { e.preventDefault(); depot.classList.remove("survol"); }));
+depot.addEventListener("drop", e => { const f = e.dataTransfer.files[0]; if (f) lireFichier(f); });
+depot.addEventListener("keydown", e => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); $("fichier").click(); } });
+$("annee").addEventListener("change", afficher);
+$("sep").addEventListener("change", afficher);
+$("regle").addEventListener("change", afficher);
+$("copie-formule").addEventListener("click", () => copier(synth.formule, t("formuleC")));
+document.querySelectorAll("[data-copie]").forEach(b => b.addEventListener("click", () => copier(tables[b.dataset.copie], t("tableauC"))));
+const onglets = [...document.querySelectorAll(".onglet")];
+onglets.forEach(o => o.addEventListener("click", () => {
+  onglets.forEach(x => { x.setAttribute("aria-selected", x === o); $(x.getAttribute("aria-controls")).hidden = x !== o; });
+}));
+document.querySelectorAll(".langue").forEach(b => b.addEventListener("click", () => {
+  lang = b.dataset.lang;
+  try { localStorage.setItem("dividendes-langue", lang); } catch (e) { /* stockage indisponible */ }
+  if (lang === "en" && $("sep").value === ",") $("sep").value = ".";
+  if (lang === "fr" && $("sep").value === ".") $("sep").value = ",";
+  traduire(); afficher();
+}));
+
+if (!ANGLAIS_ACTIF) document.querySelector(".langues").hidden = true;
+if (/^https:\/\//.test(LIEN_SOUTIEN)) { $("soutien").href = LIEN_SOUTIEN; $("soutien").hidden = false; }
+if (lang === "en") $("sep").value = ".";
+traduire();
+charger(EXEMPLE, "", true);
+</script>
 </body>
 </html>
