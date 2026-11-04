@@ -76,7 +76,13 @@ select { font: inherit; color: var(--ink); background: var(--bg); border: 1px so
 .tuile.alerte .v { color: var(--warn); }
 
 /* Onglets */
-.onglets { display: flex; gap: 4px; flex-wrap: wrap; border-bottom: 1px solid var(--line); }
+.onglets { display: flex; gap: 6px 14px; flex-wrap: wrap; align-items: flex-end; border-bottom: 1px solid var(--line); }
+.groupe { display: grid; gap: 2px; }
+.groupe-titre { font-size: .72rem; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: var(--accent); padding-left: 10px; }
+.groupe-onglets { display: flex; gap: 2px; flex-wrap: wrap; }
+.groupe + .groupe { border-left: 1px solid var(--line); padding-left: 10px; }
+.groupe .onglet { padding-left: 8px; padding-right: 8px; font-size: .88rem; }
+.groupe-titre { padding-left: 8px; }
 .onglet { font: inherit; font-size: .92rem; color: var(--muted); background: none; border: none; border-bottom: 2px solid transparent;
   padding: 8px 12px; cursor: pointer; }
 .onglet[aria-selected="true"] { color: var(--ink); border-bottom-color: var(--accent); font-weight: 600; }
@@ -134,11 +140,34 @@ footer .avert { font-size: 1rem; color: var(--muted); white-space: nowrap; }
 #tab-2074 tr.designation td + td { white-space: normal; min-width: 11ch; max-width: 16ch; overflow-wrap: anywhere; }
 #tab-2074 .total { font-weight: 600; border-right: 2px solid var(--line); }
 tr.total.haut td { border-top: none; border-bottom: 2px solid var(--line); }
-#tab-cessions tr.total.haut td { font-weight: 700; color: var(--accent); background: var(--accent-soft); }
+#tab-cessions tr.total.haut td, #tab-positions tr.total.haut td { font-weight: 700; color: var(--accent); background: var(--accent-soft); }
 #tab-cessions td:nth-child(2), #tab-crypto td:nth-child(2) { min-width: 20ch; }
 .titre-synthese { font-size: 1rem; margin: 6px 0 -4px; }
 #resume-pmv .tuile .l + .l { color: var(--ink); font-weight: 600; }
 @media (min-width: 1000px) { #tuiles, #resume-pmv { grid-template-columns: repeat(6, 1fr); } }
+table.formulaire td { padding-top: 7px; padding-bottom: 7px; }
+table.formulaire td + td, table.formulaire th + th { border-left: 1px solid var(--line); }
+table.formulaire tr.section td { font-weight: 700; color: var(--accent); background: var(--accent-soft); }
+table.formulaire tr.fort td { font-weight: 700; }
+table.formulaire tr.resultat td { border-top: 2px solid var(--line); color: var(--accent); background: var(--accent-soft); }
+table.formulaire tr.discret td { color: var(--muted); font-size: .82rem; }
+table.formulaire tr.ecart td { font-style: italic; color: var(--muted); font-size: .85rem; }
+table.formulaire td.report { font-family: var(--font-num); font-weight: 700; color: var(--accent); text-align: center; }
+table.formulaire .total { font-weight: 600; }
+#tab-2047 td:first-child { min-width: 26ch; white-space: normal; }
+input.taux { width: 7ch; -moz-appearance: textfield; appearance: textfield; font: inherit; font-family: var(--font-num); text-align: right; border: 1px solid var(--line); border-radius: 6px; padding: 2px 4px; background: var(--surface); color: var(--ink); }
+input.pays { width: 4ch; font: inherit; font-family: var(--font-num); text-transform: uppercase; text-align: center; border: 1px solid var(--line); border-radius: 6px; padding: 2px 4px; background: var(--surface); color: var(--ink); }
+input.pays.modifie { border-color: var(--warn); background: var(--warn-soft); }
+input.taux::-webkit-inner-spin-button, input.taux::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
+.option-bareme { display: flex; flex-wrap: wrap; gap: 10px 28px; align-items: center; background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 12px 14px; font-weight: 600; }
+.ecart-2op { font-weight: 400; }
+.ecart-2op b { font-family: var(--font-num); }
+.ecart-2op.bar b { color: var(--ok); }
+.option-bareme select { font: inherit; }
+.option-bareme label { display: inline-flex; flex-direction: row; align-items: center; gap: 8px; margin: 0; }
+.option-bareme input[type=checkbox] { width: 18px; height: 18px; margin: 0; }
+.tableau:has(#tab-compar) { max-width: 780px; }
+#tab-compar th.choisi { color: var(--accent); background: var(--accent-soft); }
 </style>
 </head>
 <body>
@@ -173,17 +202,49 @@ tr.total.haut td { border-top: none; border-bottom: 2px solid var(--line); }
   <section class="tuiles" id="tuiles"></section>
   <h2 class="titre-synthese" data-t="synthPmv"></h2>
   <section class="tuiles" id="resume-pmv"></section>
+  <h2 class="titre-synthese" data-t="synthOpt"></h2>
+  <div class="option-bareme">
+    <label><input type="checkbox" id="opt-2op"> <span data-t="opt2op"></span></label>
+    <label><span data-t="tmi"></span> <select id="tmi"><option>0</option><option>11</option><option selected>30</option><option>41</option><option>45</option></select> %</label>
+    <span class="ecart-2op" id="ecart-2op"></span>
+  </div>
 
   <nav class="onglets" role="tablist">
-    <button class="onglet" role="tab" id="t-pays" aria-controls="p-pays" aria-selected="true" data-t="ongletPays"></button>
-    <button class="onglet" role="tab" id="t-ste" aria-controls="p-ste" aria-selected="false" data-t="ongletSte"></button>
-    <button class="onglet" role="tab" id="t-pmv" aria-controls="p-pmv" aria-selected="false" data-t="ongletPmv"></button>
-    <button class="onglet" role="tab" id="t-suivi" aria-controls="p-suivi" aria-selected="false" data-t="ongletSuivi"></button>
-    <button class="onglet" role="tab" id="t-verif" aria-controls="p-verif" aria-selected="false" data-t="ongletVerif"></button>
-    <button class="onglet" role="tab" id="t-detail" aria-controls="p-detail" aria-selected="false" data-t="ongletDetail"></button>
+    <div class="groupe" role="presentation"><span class="groupe-titre" data-t="grpDeclarer"></span><div class="groupe-onglets" role="presentation">
+      <button class="onglet" role="tab" id="t-opt" aria-controls="p-opt" aria-selected="false" data-t="ongletOpt"></button>
+      <button class="onglet" role="tab" id="t-2047" aria-controls="p-2047" aria-selected="true" data-t="onglet2047"></button>
+      <button class="onglet" role="tab" id="t-pmv" aria-controls="p-pmv" aria-selected="false" data-t="ongletPmv"></button>
+    </div></div>
+    <div class="groupe" role="presentation"><span class="groupe-titre" data-t="grpDividendes"></span><div class="groupe-onglets" role="presentation">
+      <button class="onglet" role="tab" id="t-pays" aria-controls="p-pays" aria-selected="false" data-t="ongletPays"></button>
+      <button class="onglet" role="tab" id="t-ste" aria-controls="p-ste" aria-selected="false" data-t="ongletSte"></button>
+      <button class="onglet" role="tab" id="t-suivi" aria-controls="p-suivi" aria-selected="false" data-t="ongletSuivi"></button>
+      <button class="onglet" role="tab" id="t-detail" aria-controls="p-detail" aria-selected="false" data-t="ongletDetail"></button>
+      <button class="onglet" role="tab" id="t-verif" aria-controls="p-verif" aria-selected="false" data-t="ongletVerif"></button>
+    </div></div>
+    <div class="groupe" role="presentation"><span class="groupe-titre" data-t="grpPortefeuille"></span><div class="groupe-onglets" role="presentation">
+      <button class="onglet" role="tab" id="t-titres" aria-controls="p-titres" aria-selected="false" data-t="ongletTitres"></button>
+      <button class="onglet" role="tab" id="t-verifpf" aria-controls="p-verifpf" aria-selected="false" data-t="ongletVerifPf"></button>
+    </div></div>
   </nav>
 
-  <section class="panneau" id="p-pays" role="tabpanel" aria-labelledby="t-pays">
+  <section class="panneau" id="p-opt" role="tabpanel" aria-labelledby="t-opt" hidden>
+    <div class="entete-panneau"><h2 data-t="hSimul"></h2><button class="bouton" data-copie="compar" data-t="copierTableau"></button></div>
+    <div class="tableau"><table id="tab-compar" class="formulaire"></table></div>
+    <p class="note" data-t="noteCompar"></p>
+  </section>
+
+  <section class="panneau" id="p-2047" role="tabpanel" aria-labelledby="t-2047">
+    <div class="entete-panneau"><h2 data-t="h2047"></h2><button class="bouton" data-copie="f2047" data-t="copierTableau"></button></div>
+    <div class="tableau"><table id="tab-2047" class="formulaire"></table></div>
+    <p class="note" data-t="note2047"></p>
+    <div class="entete-panneau"><h2 data-t="h2047pv"></h2><button class="bouton" data-copie="f2047pv" data-t="copierTableau"></button></div>
+    <div class="tableau"><table id="tab-2047pv" class="formulaire"></table></div>
+    <div class="entete-panneau"><h2 data-t="h2047c7"></h2><button class="bouton" data-copie="f2047c7" data-t="copierTableau"></button></div>
+    <div class="tableau"><table id="tab-2047c7" class="formulaire"></table></div>
+  </section>
+
+  <section class="panneau" id="p-pays" role="tabpanel" aria-labelledby="t-pays" hidden>
     <div class="entete-panneau"><h2 data-t="hPays"></h2><button class="bouton" data-copie="pays" data-t="copierTableau"></button></div>
     <div class="tableau"><table id="tab-pays"></table></div>
     <ol class="renvois" data-th="renvois"></ol>
@@ -206,10 +267,19 @@ tr.total.haut td { border-top: none; border-bottom: 2px solid var(--line); }
       <div class="tableau"><table id="tab-crypto"></table></div>
       <p class="note" data-t="noteCrypto"></p>
     </div>
+    <ol class="renvois" data-th="renvoisPmv"></ol>
+  </section>
+
+  <section class="panneau" id="p-titres" role="tabpanel" aria-labelledby="t-titres" hidden>
     <div class="entete-panneau"><h2 data-t="hPositions"></h2><button class="bouton" data-copie="positions" data-t="copierTableau"></button></div>
     <div class="tableau"><table id="tab-positions"></table></div>
     <p class="note" data-t="notePositions"></p>
-    <ol class="renvois" data-th="renvoisPmv"></ol>
+  </section>
+
+  <section class="panneau" id="p-verifpf" role="tabpanel" aria-labelledby="t-verifpf" hidden>
+    <div class="entete-panneau"><h2 data-t="hVerifPf"></h2><button class="bouton" data-copie="verifpf" data-t="copierTableau"></button></div>
+    <div class="tableau"><table id="tab-verifpf"></table></div>
+    <p class="note" data-t="noteVerifPf"></p>
   </section>
 
   <section class="panneau" id="p-suivi" role="tabpanel" aria-labelledby="t-suivi" hidden>
@@ -853,9 +923,30 @@ const TXT = {
     regleMacro: "brut, retenue, frais convertis séparément", regleCredit: "net converti en une fois (crédit Degiro)",
     decimales: "Décimales des formules", virgule: "virgule (Sheets FR)", point: "point (Sheets EN)",
     exemple: "Données d'exemple",
-    ongletPays: "Par pays (2047)", ongletSte: "Par société", ongletPmv: "Plus-values (2074)", synthDiv: "Dividendes", synthPmv: "Résultats de cessions", ongletSuivi: "Suivi et formules", ongletVerif: "À vérifier", ongletDetail: "Détail des dividendes",
+    ongletOpt: "Option barème", synthOpt: "Option pour le barème", onglet2047: "Déclaration 2047", ongletPays: "Par pays", grpDeclarer: "Déclarer", grpDividendes: "Dividendes", grpPortefeuille: "Portefeuille", ongletVerifPf: "Opérations à vérifier", ongletSte: "Par société",
+    h2047: "Cadre 2 : revenus des valeurs mobilières étrangères", h2047pv: "Cadre 3 : plus-values imposables en France", h2047c7: "Cadre 7 : revenus ouvrant droit à un crédit d'impôt égal à l'impôt étranger",
+    note2047: "Montants arrondis à l'euro, pays par pays, comme sur le formulaire. Taux de la ligne 204 : notice 2047 (revenus 2025), modifiables dans le tableau. Pour un pays sans taux connu, saisissez celui de la notice. Si le taux applicable change, vérifiez-le dans la notice de l'année.",
+    hSimul: "Simulateur d'option pour le barème", opt2op: "Option pour l'imposition au barème (case 2OP de la 2042)", tmi: "Tranche marginale d'imposition",
+    cmpTitre: "Impôt sur le revenu de ces revenus", cmpPfu: "Prélèvement forfaitaire (12,8 %)", cmpBar: "Barème (option 2OP)",
+    cmpBase: "Revenu imposable", cmpBaseDiv: "dont dividendes (ligne 221, après abattement de 40 % au barème)", cmpFrais: "Frais déductibles (ligne 274)", cmpPv: "dont plus-values (3VG)",
+    cmpImpot: "Impôt avant crédit", cmpCredit: "Crédit d'impôt étranger imputé (8VL)", cmpNet: "Impôt net", cmpCsg: "Économie de CSG déductible l'année suivante (6,8 % × TMI)",
+    cmpTotal: "Coût net", cmpEcart: "Écart barème − forfait (négatif : le barème est plus favorable)", ecartTop: "Écart barème − forfait : {e} €", plusPfu: "forfait plus favorable", plusBar: "barème plus favorable", egal: "équivalent", detail: "détail dans l'onglet « Option barème »",
+    noteCompar: "Estimation de l'impôt sur le revenu de ces seuls revenus, hors prélèvements sociaux (identiques dans les deux cas). L'option 2OP vaut pour tous les revenus de capitaux et plus-values du foyer de l'année : intérêts, autres comptes, assurance-vie… Elle ne tient pas compte de l'abattement pour durée de détention des titres achetés avant 2018, ni de l'effet du revenu supplémentaire sur la tranche marginale ou la décote. Le crédit d'impôt étranger est plafonné à l'impôt français sur ces dividendes.",
+    f2047conv: "Convention fiscale avec la France", oui: "Oui", aVerifier: "À vérifier", fReport: "Report 2042",
+    f200: "200 Dividendes et jetons de présence", f201: "201 Pays d'origine ou d'encaissement",
+    f202: "202 Revenus ouvrant droit à un crédit d'impôt égal à l'impôt payé à l'étranger",
+    f203: "203 Montant net encaissé", f204: "204 Taux applicable (%)", f205: "205 Résultat", f206: "206 Impôt supporté à l'étranger",
+    f207: "207 Crédit d'impôt retenu (le plus petit de 205 et 206)", f208: "208 Revenus crédit d'impôt inclus (203 + 207)",
+    f210: "210 Revenus ouvrant droit à un crédit d'impôt égal à l'impôt français (montant brut)", f220: "220 Revenus provenant de pays sans convention",
+    f221: "221 Total des revenus (208 + 210 + 220)", f222: "222 dont dividendes éligibles à l'abattement de 40 %, uniquement en cas d'option pour l'imposition au barème (case 2OP cochée sur la 2042)", f223: "223 dont autres revenus distribués",
+    f270: "270 Divers", f274: "274 Frais et charges déductibles si option barème",
+    f30: "30 Plus-values de cession de valeurs mobilières, avant abattement", fPaysEnc: "Pays d'encaissement", fMontant: "Montant €", fPaysDegiro: "Pays-Bas (Degiro)",
+    fNature: "Nature du revenu", fRevAvant: "Revenu avant déduction de l'impôt étranger", fImpRet: "Impôt étranger retenu",
+    fDiv: "Dividendes, jetons de présence", fInt: "Intérêts", fPv: "Plus-values et gains", fTot8VL: "Montant total reporté sur la 2042 C",
+    f8PL: "Revenus nets imposables étrangers après abattement éventuel mais sans déduction de l'impôt étranger", fMvNette: "Moins-value nette : case 3VH de la 2042, rien sur la 2047", ongletPmv: "Plus ou moins-values (2074)", ongletTitres: "Titres détenus", synthDiv: "Dividendes", synthPmv: "Résultats de cessions", ongletSuivi: "Suivi (par date et société)", ongletVerif: "À vérifier", ongletDetail: "Détail",
     hPays: "Dividendes par pays de source", hSte: "Dividendes par société", hFormule: "Formule de trésorerie de l'année",
-    hChrono: "Chronologique", hMois: "Par société et par mois", hVerif: "Points à vérifier", hDetail: "Détail par dividende",
+    hChrono: "Chronologique", hMois: "Par société et par mois", hVerif: "Dividendes à vérifier", hVerifPf: "Opérations sur le portefeuille à vérifier",
+    noteVerifPf: "Sur tout l'historique : ventes supérieures aux titres détenus, conversions en euros introuvables ou estimées, retraits de cote, soultes de rompus lors d'un regroupement.", hDetail: "Détail par dividende",
     h2074: "Lignes de la déclaration 2074 en ligne", hCessions: "Calcul au prix moyen pondéré", hPositions: "Titres encore détenus selon l'historique", hCrypto: "Cessions sans ISIN (cryptoactifs) : hors 2074",
     noteCrypto: "Les cryptoactifs ne se déclarent pas sur la 2074 mais sur le formulaire 2086 (case 3AN ou 3BN de la 2042 C), avec une formule calculée sur l'ensemble du portefeuille d'actifs numériques à chaque cession, différente du prix moyen pondéré par ligne. Ces montants sont donnés à titre indicatif et exclus du résultat ci-dessus. Les cessions sont exonérées si leur total annuel ne dépasse pas 305 €.",
     note2074: "Une colonne par cession, dans l'ordre du formulaire. Les montants suivent les arrondis du formulaire en ligne : valeurs unitaires 514 à 4 décimales et 520 à 2 décimales, montants à l'euro. La ligne 524 est le résultat exact arrondi à l'euro ; 523 et 521 s'en déduisent (523 = 518 − 524, 521 = 523 − 522) pour que le formulaire boucle. La dernière ligne donne l'écart avec le calcul exact.",
@@ -864,16 +955,16 @@ const TXT = {
       "<li><b>Frais</b> : courtage, frais de place, stamp duty et taxes de l'ordre, en euros.</li>" +
       "<li><b>Prix d'acquisition</b> : prix moyen pondéré de tous les achats de la ligne depuis l'origine (art. 150-0 D du CGI), frais d'achat suivis à part pour la ligne 522. Le prix moyen repart de zéro quand la ligne est entièrement vendue. Fractionnements et regroupements changent la quantité sans changer le prix total ; changements d'ISIN conservés ; titres reçus gratuitement (spin-off, droits) à prix nul.</li>" +
       "<li><b>Non traité</b> : moins-values des années antérieures à imputer, abattements pour durée de détention (titres acquis avant 2018 et option pour le barème), PEA, remboursements de capital venant réduire le prix de revient.</li>",
-    pmvRes: "Résultat net {a}", pmvPlus: "Plus-values", pmvMoins: "Moins-values", pmvNb: "Cessions",
+    pmvRes: "Résultat net {a}", pmvPlus: "Plus-values", pmvMoins: "Moins-values", pmvNb: "Cessions", tVerifPf: "Opérations à vérifier (historique)",
     pmvCase: "À reporter sur la 2042 : case {c}", pmvVide: "Aucune cession en {a}.",
     c511: "511 Désignation des titres", c512: "512 Date de la cession", s513: "513 Détermination du prix de cession des titres", s519: "519 Détermination du prix de revient des titres",
     c514: "514 Valeur unitaire de cession", c515: "515 Nombre de titres cédés", c516: "516 Montant global de la cession", c517: "517 Frais de cession", c518: "518 Prix de cession net",
     c520: "520 Prix ou valeur d'acquisition unitaire", c521: "521 Prix ou valeur d'acquisition global", c522: "522 Frais d'acquisition", c523: "523 Prix de revient des titres cédés", c524: "524 Plus-value ou moins-value", cEcart: "Écart avec le calcul exact",
-    cQte: "Quantité", cPrixC: "Prix de cession €", cFraisC: "Frais de cession €", cNetC: "Cession nette €", cPrixA: "Prix d'acquisition €", cFraisA: "Frais d'achat €", cRevient: "Prix de revient €", cRes: "Plus ou moins-value €", cRef: "Origine", cCoutPmp: "Prix d'acquisition hors frais €", cRevientPos: "Prix de revient frais inclus €", cPmp: "Prix moyen hors frais €",
+    cQte: "Quantité", cPrixC: "Prix de cession €", cFraisC: "Frais de cession €", cNetC: "Cession nette €", cPrixA: "Prix d'acquisition €", cFraisA: "Frais d'achat €", cRevient: "Prix de revient €", cRes: "Plus ou moins-value €", cRef: "Origine", cCoutPmp: "Prix d'acquisition hors frais €", cRevientPos: "Prix de revient €", cPmp: "Prix moyen €",
     copierTableau: "Copier le tableau", copierFormule: "Copier la formule", copier: "Copier",
     noteFormule: "À coller dans une cellule de Google Sheets. La colonne « À ajouter depuis cette date » sert aux mises à jour en cours d'année : copiez-la sur la première ligne pas encore reportée et collez-la à la fin de la formule existante.",
     noteVerif: "Sur tout l'historique, au-delà de l'année choisie : opérations de change déséquilibrées, lignes sans conversion, retenues ou frais sans dividende, rattrapages et corrections, remboursements de capital.",
-    renvois: "<li><b>Pays</b> : celui de l'ISIN (2 premières lettres). Les ISIN « BMG », sociétés des Bermudes cotées à Hong Kong, sont rattachés à Hong Kong.</li>" +
+    renvois: "<li><b>Pays</b> : celui de l'ISIN (2 premières lettres). Les ISIN « BMG », sociétés des Bermudes cotées à Hong Kong, sont rattachés à Hong Kong. Le pays d'une société se corrige dans l'onglet « Dividendes par société » (code pays à 2 lettres) ; la déclaration 2047 suit.</li>" +
       "<li><b>Montants en euros</b> : chaque dividende est converti au taux de l'opération de change qui l'a réellement converti. Deux règles d'arrondi au choix (réglage « Conversion en euros ») : brut, retenue et frais convertis séparément, ou net converti en une fois comme le crédit Degiro, le brut étant alors déduit par différence. L'écart est de quelques centimes sur l'année.</li>" +
       "<li><b>Frais</b> : frais Custody de Degiro, 1 € + 3 % du dividende net de retenue, plafonnés à 10 %.</li>",
     avert: "Aide au calcul, pas un conseil fiscal : vérifiez les montants avant de les reporter sur votre déclaration.",
@@ -906,9 +997,30 @@ const TXT = {
     regleMacro: "gross, tax and fees converted separately", regleCredit: "net converted once (Degiro credit)",
     decimales: "Formula decimals", virgule: "comma (French Sheets)", point: "dot (English Sheets)",
     exemple: "Sample data",
-    ongletPays: "By country (form 2047)", ongletSte: "By company", ongletPmv: "Capital gains (2074)", synthDiv: "Dividends", synthPmv: "Capital gains and losses", ongletSuivi: "Tracking and formulas", ongletVerif: "To check", ongletDetail: "Dividend detail",
+    ongletOpt: "Scale option", synthOpt: "Progressive scale option", onglet2047: "Form 2047", ongletPays: "By country", grpDeclarer: "Tax forms", grpDividendes: "Dividends", grpPortefeuille: "Portfolio", ongletVerifPf: "Operations to check", ongletSte: "By company",
+    h2047: "Section 2: foreign securities income", h2047pv: "Section 3: capital gains taxable in France", h2047c7: "Section 7: income giving a tax credit equal to foreign tax",
+    note2047: "Amounts rounded to the euro, country by country, as on the form. Line 204 rates: form 2047 notice (2025 income), editable in the table. For a country without a known rate, enter the notice rate.",
+    hSimul: "Progressive scale option simulator", opt2op: "Opt for the progressive scale (box 2OP of form 2042)", tmi: "Marginal tax rate",
+    cmpTitre: "Income tax on this income", cmpPfu: "Flat tax (12.8%)", cmpBar: "Progressive scale (2OP)",
+    cmpBase: "Taxable income", cmpBaseDiv: "of which dividends (line 221, after 40% allowance on the scale)", cmpFrais: "Deductible expenses (line 274)", cmpPv: "of which capital gains (3VG)",
+    cmpImpot: "Tax before credit", cmpCredit: "Foreign tax credit (8VL)", cmpNet: "Net tax", cmpCsg: "Deductible CSG saving the following year (6.8% × marginal rate)",
+    cmpTotal: "Net cost", cmpEcart: "Scale − flat tax (negative: the scale is better)", ecartTop: "Scale − flat tax: €{e}", plusPfu: "flat tax is better", plusBar: "scale is better", egal: "equivalent", detail: "details in the “Scale option” tab",
+    noteCompar: "Estimate of income tax on this income only, excluding social charges (identical in both cases). Box 2OP applies to all investment income and gains of the household for the year. Holding-period allowances and the effect on the marginal rate are not taken into account. The foreign tax credit is capped at the French tax on these dividends.",
+    f2047conv: "Tax treaty with France", oui: "Yes", aVerifier: "To check", fReport: "Form 2042",
+    f200: "200 Dividends and directors' fees", f201: "201 Country of origin or collection",
+    f202: "202 Income giving a tax credit equal to foreign tax",
+    f203: "203 Net amount received", f204: "204 Applicable rate (%)", f205: "205 Result", f206: "206 Foreign tax paid",
+    f207: "207 Tax credit (lower of 205 and 206)", f208: "208 Income including tax credit (203 + 207)",
+    f210: "210 Income giving a tax credit equal to French tax (gross)", f220: "220 Income from non-treaty countries",
+    f221: "221 Total income (208 + 210 + 220)", f222: "222 of which dividends eligible for the 40% allowance, only if the progressive scale is chosen (box 2OP ticked on form 2042)", f223: "223 of which other distributions",
+    f270: "270 Miscellaneous", f274: "274 Deductible expenses if progressive scale is chosen",
+    f30: "30 Capital gains on securities, before allowance", fPaysEnc: "Country of collection", fMontant: "Amount €", fPaysDegiro: "Netherlands (Degiro)",
+    fNature: "Type of income", fRevAvant: "Income before foreign tax", fImpRet: "Foreign tax credited",
+    fDiv: "Dividends, directors' fees", fInt: "Interest", fPv: "Capital gains", fTot8VL: "Total carried to form 2042 C",
+    f8PL: "Net foreign taxable income after allowance, without deducting foreign tax", fMvNette: "Net capital loss: box 3VH of form 2042, nothing on form 2047", ongletPmv: "Capital gains and losses (2074)", ongletTitres: "Holdings", synthDiv: "Dividends", synthPmv: "Capital gains and losses", ongletSuivi: "Tracking (by date and company)", ongletVerif: "To check", ongletDetail: "Detail",
     hPays: "Dividends by source country", hSte: "Dividends by company", hFormule: "Cash formula for the year",
-    hChrono: "Chronological", hMois: "By company and month", hVerif: "Items to check", hDetail: "Detail by dividend",
+    hChrono: "Chronological", hMois: "By company and month", hVerif: "Dividends to check", hVerifPf: "Portfolio operations to check",
+    noteVerifPf: "Across the whole history: sales exceeding holdings, missing or estimated euro conversions, delistings, cash for fractional shares on reverse splits.", hDetail: "Detail by dividend",
     h2074: "Online form 2074 lines", hCessions: "Weighted average cost calculation", hPositions: "Holdings remaining according to the history", hCrypto: "Sales without an ISIN (crypto-assets): not on form 2074",
     noteCrypto: "Crypto-assets are not reported on form 2074 but on form 2086, with a formula based on the whole crypto portfolio at each sale, different from the per-holding weighted average cost. These amounts are indicative only and excluded from the result above. Sales are exempt if their yearly total does not exceed €305.",
     note2074: "One column per sale, in the order of the form. Amounts follow the online form's rounding: unit values 514 to 4 decimals and 520 to 2 decimals, amounts to the euro. Line 524 is the exact result rounded to the euro; 523 and 521 are derived from it (523 = 518 − 524, 521 = 523 − 522) so the form balances. The last row shows the difference with the exact calculation.",
@@ -917,12 +1029,12 @@ const TXT = {
       "<li><b>Fees</b>: brokerage, exchange fees, stamp duty and transaction taxes of the order, in euros.</li>" +
       "<li><b>Acquisition price</b>: weighted average cost of all purchases of the holding since inception, purchase fees tracked separately for line 522. The average restarts from zero when the holding is fully sold. Splits and reverse splits change the quantity, not the total cost; ISIN changes are carried over; shares received for free (spin-offs, rights) at zero cost.</li>" +
       "<li><b>Not handled</b>: losses carried forward from previous years, holding-period allowances, PEA accounts, returns of capital reducing the cost basis.</li>",
-    pmvRes: "Net result {a}", pmvPlus: "Gains", pmvMoins: "Losses", pmvNb: "Sales",
+    pmvRes: "Net result {a}", pmvPlus: "Gains", pmvMoins: "Losses", pmvNb: "Sales", tVerifPf: "Operations to check (history)",
     pmvCase: "Report on form 2042: box {c}", pmvVide: "No sales in {a}.",
     c511: "511 Securities", c512: "512 Sale date", s513: "513 Sale price", s519: "519 Cost basis",
     c514: "514 Unit sale value", c515: "515 Number of shares sold", c516: "516 Total sale amount", c517: "517 Sale fees", c518: "518 Net sale price",
     c520: "520 Unit acquisition price", c521: "521 Total acquisition price", c522: "522 Acquisition fees", c523: "523 Cost basis of shares sold", c524: "524 Gain or loss", cEcart: "Difference with exact calculation",
-    cQte: "Quantity", cPrixC: "Sale price €", cFraisC: "Sale fees €", cNetC: "Net sale €", cPrixA: "Acquisition price €", cFraisA: "Purchase fees €", cRevient: "Cost basis €", cRes: "Gain or loss €", cRef: "Source", cCoutPmp: "Acquisition cost excl. fees €", cRevientPos: "Cost basis incl. fees €", cPmp: "Average price excl. fees €",
+    cQte: "Quantity", cPrixC: "Sale price €", cFraisC: "Sale fees €", cNetC: "Net sale €", cPrixA: "Acquisition price €", cFraisA: "Purchase fees €", cRevient: "Cost basis €", cRes: "Gain or loss €", cRef: "Source", cCoutPmp: "Acquisition cost excl. fees €", cRevientPos: "Cost basis €", cPmp: "Average price €",
     copierTableau: "Copy table", copierFormule: "Copy formula", copier: "Copy",
     noteFormule: "Paste into a Google Sheets cell. The “To add from this date” column is for updates during the year: copy it from the first row not yet recorded and paste it at the end of the existing formula.",
     noteVerif: "Across the whole history, not only the selected year: unbalanced currency conversions, lines without a conversion, withholding taxes or fees without a dividend, late fees and tax adjustments, returns of capital.",
@@ -1023,6 +1135,13 @@ const EXEMPLE = [
 
 /* ---------- état ---------- */
 let analyse = null, synth = null, tables = {}, nomFichier = "", estExemple = true;
+/* Taux de la ligne 204 (dividendes), notice 2047 revenus 2025, en % du montant net encaissé.
+   null : pas de taux dans la notice (pas de convention ou crédit égal à l'impôt français) : à vérifier. */
+const TAUX_2047 = { AT: 17.6, AU: 17.6, BE: 17.6, CA: 17.6, CH: 17.6, CN: 11.1, CY: 17.6, CZ: 11.1, DK: 17.6, ES: 17.6, GB: 17.6, GR: 17.6,
+  HK: 11.1, HU: 17.6, IL: 17.6, IN: 11.1, IS: 17.6, IT: 17.6, JP: 11.1, KR: 17.6, LU: 17.6, MT: 17.6, MX: 17.6, NL: 17.6, NO: 17.6,
+  NZ: 17.7, PL: 17.6, PT: 17.6, SG: 17.6, TR: 25, TW: 11.1, US: 17.6, ZA: 17.6 };
+const tauxPerso = {};
+const paysPerso = {};   // pays fiscal choisi par société (ISIN -> code pays)
 const $ = id => document.getElementById(id);
 const num2 = x => x.toLocaleString(TXT[lang].locale, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 const eur = x => (x === null || x === undefined || x === "") ? "" : num2(x);
@@ -1078,6 +1197,7 @@ function afficher() {
   if (!analyse) return;
   afficherEtat();
   const an = +$("annee").value;
+  for (const f of analyse.res.fiches) { if (f.paysIsin === undefined) f.paysIsin = f.pays; f.pays = paysPerso[f.isin] || f.paysIsin; }
   synth = C.synthese(analyse.lignes, analyse.res, an, { sepDec: $("sep").value, regle: $("regle").value });
   const S = synth;
 
@@ -1089,8 +1209,10 @@ function afficher() {
   R.ctrl.forEach((c, i) => { if (c && R.ficheDe[i] < 0) verif.push({ date: L[i].date, ste: L[i].pdt, quoi: ligne(L[i]), motif: c }); });
   for (const o of R.orphelins) { const x = L[o.i]; verif.push({ date: x.date, ste: x.pdt, quoi: ligne(x), motif: o.motif }); }
   for (const l of analyse.fx.lots) if (l.ecart) verif.push({ date: l.date, ste: "", quoi: t("change") + " " + dev(l.montant) + " " + l.dev, motif: "Lot déséquilibré de " + l.ecart + " " + l.dev });
-  for (const c of analyse.ces.cessions) for (const m of c.ctrl) if (!/^Rachat \/ OPA/.test(m)) verif.push({ date: c.date, ste: c.ste, quoi: "Vente " + c.qte + " (" + eur(c.brut) + " €)", motif: m });
-  for (const g of analyse.ces.ctrl) verif.push({ date: g.date, ste: g.ste, quoi: "", motif: g.motif });
+  const verifPf = [];
+  for (const c of analyse.ces.cessions) for (const m of c.ctrl) if (!/^Rachat \/ OPA/.test(m)) verifPf.push({ date: c.date, ste: c.ste, quoi: "Vente " + c.qte + " (" + eur(c.brut) + " €)", motif: m });
+  for (const g of analyse.ces.ctrl) verifPf.push({ date: g.date, ste: g.ste, quoi: "", motif: g.motif });
+  verifPf.sort((a, b) => b.date - a.date);
   verif.sort((a, b) => b.date - a.date);
   const verifAn = S.fiches.filter(f => f.ctrl.length).length;
 
@@ -1118,7 +1240,9 @@ function afficher() {
 
   // par société
   tables.ste = rendre("tab-ste", [
-    { t: t("cSte"), v: s => s.ste }, { t: t("cPays") + sup(1), v: s => s.pays }, { t: t("cDevise"), v: s => s.dev },
+    { t: t("cSte"), v: s => s.ste },
+    { t: t("cPays") + sup(1), v: s => s.pays, html: s => `<input class="pays${paysPerso[s.isin] ? " modifie" : ""}" maxlength="2" data-isin="${esc(s.isin)}" value="${esc(s.pays)}" aria-label="${esc(t("cPays") + " " + s.ste)}">` },
+    { t: t("cDevise"), v: s => s.dev },
     { t: t("cBrutD"), n: 1, v: s => s.brut, f: dev }, { t: t("cRetD"), n: 1, v: s => s.impot, f: dev },
     { t: t("cPctRet"), n: 1, v: s => s.pctRetenue, f: pct }, { t: t("cFraisD") + sup(3), n: 1, v: s => s.frais, f: dev },
     { t: t("cNetD"), n: 1, v: s => s.net, f: dev },
@@ -1135,7 +1259,7 @@ function afficher() {
   const fmtE = x => Math.round(x).toLocaleString(TXT[lang].locale);
   $("resume-pmv").innerHTML = CE.length ? [
     [t("pmvRes", { a: an }), fmtE(res2074) + " €", t("pmvCase", { c: res2074 >= 0 ? "3VG" : "3VH" })],
-    [t("pmvPlus"), fmtE(plus) + " €"], [t("pmvMoins"), fmtE(res2074 - plus) + " €"], [t("pmvNb"), String(CE.length)]
+    [t("pmvPlus"), fmtE(plus) + " €"], [t("pmvMoins"), fmtE(res2074 - plus) + " €"], [t("pmvNb"), String(CE.length)], [t("tVerifPf"), String(verifPf.length)]
   ].map(([l, v, s]) => `<div class="tuile"><span class="v">${v}</span><span class="l">${esc(l)}</span>${s ? `<span class="l">${esc(s)}</span>` : ""}</div>`).join("")
     : `<p class="note">${esc(t("pmvVide", { a: an }))}</p>`;
   // formulaire 2074 : lignes du formulaire en lignes, cessions en colonnes
@@ -1197,8 +1321,105 @@ function afficher() {
     { t: t("cQte"), n: 1, v: p => p.q, f: qteF },
     { t: t("cCoutPmp"), n: 1, v: p => p.cout }, { t: t("cFraisA"), n: 1, v: p => p.frais },
     { t: t("cRevientPos"), n: 1, v: p => C.arr2(p.cout + p.frais) },
-    { t: t("cPmp"), n: 1, v: p => p.q ? Math.round(p.cout / p.q * 1e4) / 1e4 : 0, f: fmtN(4) }
-  ], [...analyse.ces.positions].sort((a, b) => a.ste.localeCompare(b.ste)));
+    { t: t("cPmp"), n: 1, v: p => p.q ? Math.round((p.cout + p.frais) / p.q * 1e4) / 1e4 : "", f: fmtN(4) }
+  ], [...analyse.ces.positions].sort((a, b) => a.ste.localeCompare(b.ste)),
+  { ste: t("total"), isin: "", q: "", cout: somme(analyse.ces.positions, "cout"), frais: somme(analyse.ces.positions, "frais") }, true);
+
+  // déclaration 2047 : arrondis à l'euro, pays par pays
+  {
+    const e0 = x => (Math.sign(x) * Math.floor(Math.abs(x) + 0.5 + 1e-9)) || 0;
+    const fmt0 = x => (x || 0).toLocaleString(TXT[lang].locale, { maximumFractionDigits: 0 });
+    const P = [...S.pays].sort((a, b) => nomPays(a.pays).localeCompare(nomPays(b.pays), TXT[lang].locale)).map(p => {
+      const taux = p.pays in tauxPerso ? tauxPerso[p.pays] : (TAUX_2047[p.pays] ?? null);
+      const l203 = e0(p.netAvantFrais), l205 = taux === null ? 0 : e0(l203 * taux / 100), l206 = e0(-p.impotEur);
+      return { pays: p.pays, nom: TXT[lang].pays[p.pays] || p.pays, taux, l203, l205, l206, l207: Math.min(l205, l206), l274: e0(-p.fraisEur) };
+    });
+    const T = k => P.reduce((a, p) => a + p[k], 0);
+    const l208 = T("l203") + T("l207"), l221 = l208;
+    const bareme = $("opt-2op").checked, tmi = +$("tmi").value / 100;
+    // comparaison forfait / barème (impôt sur le revenu de ces seuls revenus)
+    {
+      const pv = res2074, frais = T("l274"), cred = T("l207");
+      const pfuDiv = l221, pfuImp = Math.max(0, 0.128 * (pfuDiv + pv)), pfuCred = Math.min(cred, 0.128 * pfuDiv);
+      const barDiv = l221 * 0.6, barImp = Math.max(0, tmi * (barDiv - frais + pv)), barCred = Math.min(cred, Math.max(0, tmi * (barDiv - frais)));
+      const csg = tmi * 0.068 * Math.max(0, l221 - frais + pv);
+      const C2 = [
+        ["cmpBaseDiv", pfuDiv, barDiv], ["cmpFrais", "", -frais], ["cmpPv", pv, pv],
+        ["cmpImpot", pfuImp, barImp, "fort"], ["cmpCredit", -pfuCred, -barCred], ["cmpNet", pfuImp - pfuCred, barImp - barCred, "fort"],
+        ["cmpCsg", "", -csg], ["cmpTotal", pfuImp - pfuCred, barImp - barCred - csg, "fort resultat"]
+      ];
+      const ecart = (barImp - barCred - csg) - (pfuImp - pfuCred);
+      const f = v => v === "" ? "" : fmt0(Math.round(v));
+      $("tab-compar").innerHTML = `<thead><tr><th>${esc(t("cmpTitre"))}</th><th class="n${bareme ? "" : " choisi"}">${esc(t("cmpPfu"))}</th><th class="n${bareme ? " choisi" : ""}">${esc(t("cmpBar"))}</th></tr></thead><tbody>` +
+        C2.map(([k, a, b, c]) => `<tr class="${c || ""}"><td>${esc(t(k))}</td><td class="n">${f(a)}</td><td class="n">${f(b)}</td></tr>`).join("") +
+        `<tr class="ecart"><td>${esc(t("cmpEcart"))}</td><td></td><td class="n">${f(ecart)}</td></tr></tbody>`;
+      const ec = Math.round(ecart);
+      $("ecart-2op").innerHTML = `<b>${esc(t("ecartTop", { e: (ec > 0 ? "+" : "") + fmt0(ec) }))}</b> → ${esc(ec > 0 ? t("plusPfu") : ec < 0 ? t("plusBar") : t("egal"))} <span class="muted">(${esc(t("detail"))})</span>`;
+      $("ecart-2op").className = "ecart-2op " + (ec > 0 ? "pfu" : ec < 0 ? "bar" : "");
+      tables.compar = [[t("cmpTitre"), t("cmpPfu"), t("cmpBar")].join("\t"), ...C2.map(([k, a, b]) => [t(k), a === "" ? "" : Math.round(a), b === "" ? "" : Math.round(b)].join("\t")), [t("cmpEcart"), "", ec].join("\t")].join("\n");
+    }
+    // lignes : [clé, valeur par pays, total, report 2042, classe]
+    const L = [
+      { k: "f2047conv", p: p => p.taux === null ? t("aVerifier") : t("oui"), txt: 1, cls: "discret" },
+      { sec: "f200" },
+      { k: "f201", p: p => p.nom, txt: 1, cls: "designation" },
+      { sec: "f202" },
+      { k: "f203", p: p => p.l203, tot: T("l203") },
+      { k: "f204", p: p => p.taux, taux: 1 },
+      { k: "f205", p: p => p.l205, tot: T("l205") },
+      { k: "f206", p: p => p.l206, tot: T("l206") },
+      { k: "f207", p: p => p.l207, tot: T("l207"), rep: "8VL", cls: "fort" },
+      { k: "f208", tot: l208, rep: "2DC", cls: "fort resultat" },
+      { k: "f210", tot: 0 }, { k: "f220", tot: 0 },
+      { k: "f221", tot: l221, cls: "fort" },
+      { k: "f222", tot: bareme ? l221 : undefined, rep: "2DC" }, { k: "f223", tot: 0, rep: "2TS" },
+      { sec: "f270" },
+      { k: "f274", p: p => bareme ? p.l274 : "", tot: bareme ? T("l274") : undefined, rep: "2CA", cls: "fort resultat" }
+    ];
+    const nb = P.length + 3;
+    const cell = (r, p) => {
+      if (!r.p) return "";
+      const v = r.p(p);
+      if (r.taux) return `<input class="taux" type="number" min="0" max="100" step="0.1" data-pays="${esc(p.pays)}" value="${v === null ? "" : v}" aria-label="${esc(t("f204") + " " + p.nom)}">`;
+      return r.txt ? esc(v) : v === "" ? "" : fmt0(v);
+    };
+    let html = "";
+    const tsv = [["", t("fReport"), t("total"), ...P.map(p => p.nom)].join("\t")];
+    for (const r of L) {
+      if (r.sec) { html += `<tr class="section"><td colspan="${nb}">${esc(t(r.sec))}</td></tr>`; tsv.push(t(r.sec)); continue; }
+      html += `<tr class="${r.cls || ""}"><td>${esc(t(r.k))}</td><td class="report">${r.rep || ""}</td><td class="n total">${r.tot === undefined ? "" : fmt0(r.tot)}</td>` +
+        P.map(p => `<td class="${r.txt ? "" : "n"}">${cell(r, p)}</td>`).join("") + "</tr>";
+      tsv.push([t(r.k), r.rep || "", r.tot === undefined ? "" : r.tot, ...P.map(p => r.p ? (r.p(p) ?? "") : "")].join("\t").replace(/(\d)\.(\d)/g, "$1" + TXT[lang].decTsv + "$2"));
+    }
+    $("tab-2047").innerHTML = P.length ? `<thead><tr><th></th><th>${esc(t("fReport"))}</th><th class="n total">${esc(t("total"))}</th>${P.map(p => `<th class="n">${esc(p.pays)}</th>`).join("")}</tr></thead><tbody>${html}</tbody>` : "";
+    tables.f2047 = tsv.join("\n");
+    $("tab-2047").onchange = e => {
+      const i = e.target.closest("input.taux"); if (!i) return;
+      const v = i.value.trim().replace(",", ".");
+      if (v === "") delete tauxPerso[i.dataset.pays]; else tauxPerso[i.dataset.pays] = +v;
+      afficher();
+    };
+    // cadre 3 : plus-values
+    const pv = Math.max(0, res2074);
+    $("tab-2047pv").innerHTML = `<thead><tr><th></th><th>${esc(t("fPaysEnc"))}</th><th class="n">${esc(t("fMontant"))}</th><th>${esc(t("fReport"))}</th></tr></thead><tbody>` +
+      `<tr class="fort resultat"><td>${esc(t("f30"))}</td><td>${esc(t("fPaysDegiro"))}</td><td class="n">${fmt0(pv)}</td><td class="report">3VG</td></tr>` +
+      (res2074 < 0 ? `<tr class="ecart"><td colspan="4">${esc(t("fMvNette"))} (${fmt0(res2074)} €)</td></tr>` : "") + "</tbody>";
+    tables.f2047pv = [["", t("fPaysEnc"), t("fMontant"), t("fReport")].join("\t"), [t("f30"), t("fPaysDegiro"), pv, "3VG"].join("\t")].join("\n");
+    // cadre 7
+    const C7 = [[t("fDiv"), T("l207")], [t("fInt"), ""], [t("fPv"), ""]];
+    $("tab-2047c7").innerHTML = `<thead><tr><th>${esc(t("fNature"))}</th><th class="n">${esc(t("fImpRet"))}</th><th>${esc(t("fReport"))}</th></tr></thead><tbody>` +
+      C7.map(([l, v]) => `<tr><td>${esc(l)}</td><td class="n">${v === "" ? "" : fmt0(v)}</td><td></td></tr>`).join("") +
+      `<tr class="fort resultat"><td>${esc(t("fTot8VL"))}</td><td class="n">${fmt0(T("l207"))}</td><td class="report">8VL</td></tr>` +
+      `<tr class="fort resultat"><td>${esc(t("f8PL"))}</td><td class="n">${fmt0(l221)}</td><td class="report">8PL</td></tr></tbody>`;
+    tables.f2047c7 = [[t("fNature"), t("fImpRet"), t("fReport")].join("\t"), ...C7.map(r => r.join("\t") + "\t"), [t("fTot8VL"), T("l207"), "8VL"].join("\t"), [t("f8PL"), l221, "8PL"].join("\t")].join("\n");
+  }
+
+  $("tab-ste").onchange = e => {
+    const i = e.target.closest("input.pays"); if (!i) return;
+    const v = i.value.trim().toUpperCase(), f = analyse.res.fiches.find(f => f.isin === i.dataset.isin);
+    if (!v || (f && v === f.paysIsin)) delete paysPerso[i.dataset.isin]; else paysPerso[i.dataset.isin] = v;
+    afficher();
+  };
 
   // suivi
   $("formule").textContent = S.formule;
@@ -1223,6 +1444,11 @@ function afficher() {
     { t: t("cDate"), v: v => C.fmtDate(v.date) }, { t: t("cSte"), v: v => v.ste }, { t: t("cLigne"), v: v => v.quoi },
     { t: t("cMotif"), v: v => motif(v.motif), html: v => `<span class="chip">${esc(motif(v.motif))}</span>` }
   ], verif);
+
+  tables.verifpf = rendre("tab-verifpf", [
+    { t: t("cDate"), v: v => C.fmtDate(v.date) }, { t: t("cSte"), v: v => v.ste }, { t: t("cLigne"), v: v => v.quoi },
+    { t: t("cMotif"), v: v => motif(v.motif), html: v => `<span class="chip">${esc(motif(v.motif))}</span>` }
+  ], verifPf);
 
   // détail
   tables.detail = rendre("tab-detail", [
@@ -1431,6 +1657,8 @@ depot.addEventListener("keydown", e => { if (e.key === "Enter" || e.key === " ")
 $("annee").addEventListener("change", afficher);
 $("sep").addEventListener("change", afficher);
 $("regle").addEventListener("change", afficher);
+$("opt-2op").addEventListener("change", afficher);
+$("tmi").addEventListener("change", afficher);
 $("copie-formule").addEventListener("click", () => copier(synth.formule, t("formuleC")));
 document.querySelectorAll("[data-copie]").forEach(b => b.addEventListener("click", () => copier(tables[b.dataset.copie], t("tableauC"))));
 const onglets = [...document.querySelectorAll(".onglet")];
