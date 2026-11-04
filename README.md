@@ -71,7 +71,9 @@ Si cet outil vous a fait gagner du temps, vous pouvez m'offrir un café : https:
 
 Nicolas, ancien expert-comptable spécialisé en consolidation et reporting, aujourd'hui *technical director* Unreal Engine pour la télévision et le cinéma.
 
-## Licence
+## ⚠️ Licence et Usage Commercial
 
-© 2026 Nicolas. Code publié sous licence **GNU AGPL v3.0** ou ultérieure : voir le fichier [`LICENSE`](LICENSE).
-Vous pouvez utiliser, étudier, modifier et redistribuer ce code. Toute version modifiée, y compris proposée comme service en ligne, doit être publiée sous la même licence, avec son code source.
+Ce projet est en **accès libre** pour un usage strictement **personnel et privé**. 
+
+**L'utilisation commerciale, professionnelle ou en entreprise est formellement interdite.** Vous n'avez pas le droit de vendre ce logiciel, de l'intégrer dans un produit payant, ou de l'utiliser dans le cadre de votre travail pour générer du profit. Pour plus de détails, veuillez consulter le fichier [LICENSE](LICENSE).
+
